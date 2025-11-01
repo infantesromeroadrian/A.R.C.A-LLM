@@ -1,0 +1,827 @@
+---
+alwaysApply: true
+---
+# 🎯 MASTER WORKFLOW RULE - AI/ML Project Lifecycle
+
+## 🚨 CRITICAL: This Rule Governs All Other Rules
+
+This master rule defines the **complete project lifecycle** and determines **which rules apply in each phase**. The AI assistant MUST follow this workflow sequentially and apply phase-specific rules accordingly.
+
+---
+
+## 📊 THE 3-PHASE PROJECT LIFECYCLE
+
+```
+PHASE 1: DISCOVERY        PHASE 2: PLANNING        PHASE 3: EXECUTION
+(Requirements)            (Architecture)            (Development)
+     ↓                         ↓                         ↓
+  Gather                   Design                    Build
+  Approve                  Diagram                   Test
+  Document                 Ticket                    Deploy
+                                                     Monitor
+```
+
+---
+
+## 🎯 PHASE 1: DISCOVERY & REQUIREMENTS (Week 1)
+
+### **Objective:** Understand WHAT to build and WHY
+
+### **Active Rules:**
+- ✅ `02_requirements_gathering_rule.mdc` - PRIMARY RULE
+- ✅ `03_history_logging_rule.mdc` - CONTINUOUS (log everything)
+
+### **Inactive Rules:**
+- ❌ All architecture rules (too early)
+- ❌ All code quality rules (no code yet)
+- ❌ All ticket rules (requirements first)
+
+### **AI Assistant Behavior:**
+
+**MUST DO:**
+1. **Ask the 27 mandatory questions** from 02_requirements_gathering_rule.mdc
+   - Phase 1: Business Context (Questions 1-4)
+   - Phase 2: Data (Questions 5-9)
+   - Phase 3: AI/ML Solution (Questions 10-14)
+   - Phase 4: Architecture & Technologies (Questions 15-20)
+   - Phase 5: Security & Compliance (Questions 21-24)
+   - Phase 6: Monitoring & Maintenance (Questions 25-27)
+
+2. **Create requirements document** using the template
+
+3. **Log everything in historyMD/**
+   - Session log for requirements gathering
+   - Conversations with user
+   - Decisions made about technology stack
+
+4. **Present requirements document to user**
+
+5. **Get EXPLICIT approval** before proceeding to Phase 2
+
+**NEVER DO:**
+- ❌ Skip questions to "save time"
+- ❌ Assume requirements
+- ❌ Start coding
+- ❌ Create tickets
+- ❌ Draw diagrams (wait for Phase 2)
+
+### **Phase 1 Completion Checklist:**
+
+```markdown
+- [ ] All 27 questions answered
+- [ ] Requirements document created
+- [ ] User explicitly approved requirements
+- [ ] All conversations logged in historyMD
+- [ ] Session log complete
+- [ ] Ready for Phase 2
+```
+
+**Only when ALL items checked → Proceed to Phase 2**
+
+---
+
+## 📐 PHASE 2: PLANNING & ARCHITECTURE (Week 1-2)
+
+### **Objective:** Design HOW to build it
+
+### **Active Rules:**
+- ✅ `04_architecture_diagram_rule.mdc` - PRIMARY RULE (first)
+- ✅ `05_ticket_system_rule.mdc` - PRIMARY RULE (second)
+- ✅ `03_history_logging_rule.mdc` - CONTINUOUS
+- ✅ `06_project_tracking.mdc` - MANDATORY (CSV tracking real-time)
+
+### **Inactive Rules:**
+- ❌ All code quality rules (no code yet)
+- ❌ Code review rules (nothing to review)
+- ❌ Refactoring rules (nothing to refactor)
+- ❌ LLM implementation (too early)
+
+### **AI Assistant Behavior:**
+
+**STEP 1: Create Architecture Diagrams** (2-4 hours)
+
+**MUST DO:**
+1. **Create diagrams/ directory structure**
+   - architecture/
+   - components/
+   - flows/
+   - exports/
+
+2. **Create mandatory diagrams** (.drawio format):
+   - `01_system_overview.drawio` - ALWAYS
+   - `02_data_pipeline.drawio` - If data-intensive
+   - `03_ml_pipeline.drawio` - If ML project
+   - `04_deployment.drawio` - ALWAYS
+
+3. **Follow Draw.io standards:**
+   - Color scheme (8 colors defined)
+   - Shape conventions (8 shapes defined)
+   - Arrow conventions (4 types defined)
+
+4. **Export diagrams:**
+   - PNG (300 DPI) for documentation
+   - SVG (scalable) for web
+   - PDF (optional) for printing
+
+5. **Document diagrams:**
+   - Create diagrams/README.md
+   - Link from requirements doc
+
+6. **Log in historyMD:**
+   - Decision log for architecture choices
+   - Session log for diagram creation
+
+7. **Get user approval** before proceeding to tickets
+
+**Quality Gates:**
+- [ ] All mandatory diagrams created
+- [ ] All components from requirements represented
+- [ ] Technology stack specified in diagrams
+- [ ] Data flows shown clearly
+- [ ] Deployment architecture defined
+- [ ] Diagrams exported to PNG/SVG
+- [ ] diagrams/README.md updated
+- [ ] User approved diagrams
+- [ ] Logged in historyMD
+
+**STEP 2: Create Ticket System** (1-2 hours)
+
+**MUST DO:**
+1. **Create tickets/ directory structure**
+   - BACKLOG.md
+   - IN_PROGRESS.md
+   - COMPLETED.md
+   - BLOCKED.md
+   - by-category/
+
+2. **Analyze diagrams and requirements:**
+   - Each component → Tickets
+   - Each integration → Tickets
+   - Each database → Tickets
+   - Each API → Tickets
+
+3. **Create comprehensive ticket list:**
+   - [DATA] tickets for data work
+   - [MODEL] tickets for ML work
+   - [INFRA] tickets for infrastructure
+   - [TEST] tickets for testing
+   - [DOC] tickets for documentation
+   - [SECURITY] tickets for security
+   - [DEPLOY] tickets for deployment
+   - [RESEARCH] tickets for research
+
+4. **For each ticket:**
+   - Clear description
+   - Acceptance criteria (checklist)
+   - Dependencies (what blocks what)
+   - Priority (Critical/High/Medium/Low)
+   - Size estimate (XS/S/M/L/XL)
+   - Reference to diagram component
+   - Reference to requirement
+
+5. **Create tickets/README.md** master index
+
+6. **Present ticket list to user**
+
+7. **Get approval** before starting development
+
+**Quality Gates:**
+- [ ] tickets/ directory created
+- [ ] All components from diagrams have tickets
+- [ ] All requirements have corresponding tickets
+- [ ] Dependencies identified
+- [ ] Priorities assigned
+- [ ] Estimates provided
+- [ ] tickets/README.md complete
+- [ ] User approved ticket list
+- [ ] First ticket moved to IN_PROGRESS.md
+
+**Phase 2 Completion Checklist:**
+
+```markdown
+- [ ] All architecture diagrams created and approved
+- [ ] All diagrams exported (PNG/SVG)
+- [ ] diagrams/README.md complete
+- [ ] All tickets created
+- [ ] tickets/README.md complete
+- [ ] Dependencies mapped
+- [ ] Critical path identified
+- [ ] User approved diagrams
+- [ ] User approved tickets
+- [ ] Everything logged in historyMD
+- [ ] Ready for Phase 3
+```
+
+**Only when ALL items checked → Proceed to Phase 3**
+
+---
+
+## 💻 PHASE 3: EXECUTION & DEVELOPMENT (Weeks 2-N)
+
+### **Objective:** BUILD it following best practices
+
+### **Active Rules (ALL):**
+
+#### 📋 **Project Management (Continuous):**
+- ✅ `03_history_logging_rule.mdc` - MANDATORY (every session)
+- ✅ `05_ticket_system_rule.mdc` - MANDATORY (one ticket at a time)
+- ✅ `06_project_tracking.mdc` - MANDATORY (CSV metrics real-time)
+
+#### 🏗️ **Architecture & Structure:**
+- ✅ `04_architecture_diagram_rule.mdc` - Reference diagrams
+
+#### 🎨 **Code Quality:**
+- ✅ `07_clean_code_principles.mdc` - Clean code principles
+- ✅ `08_cod_style.mdc` - Style guidelines
+- ✅ `12_designs_patterns.mdc` - Design patterns
+- ✅ `09_general_rules.mdc` - General best practices
+
+#### 🔍 **Code Review & Quality:**
+- ✅ `11_code_review.mdc` - Review process
+- ✅ `10_quality_checklist_modern.mdc` - Quality gates
+- ✅ `14_refactoring_modern.mdc` - Refactoring guidelines
+
+#### 🧠 **LLM & AI Specific:**
+- ✅ `15_llm_uses_rules.mdc` - LLM integration patterns
+- ✅ `16_mcp_implementation_guide.mdc` - MCP projects
+- ✅ `13_workflow_modern.mdc` - ML workflow automation
+
+#### 🏛️ **Architecture & Design:**
+- ✅ `17_domain_driven_design.mdc` - DDD tactical patterns, rich domain models
+
+### **AI Assistant Behavior:**
+
+**AT START OF EACH SESSION:**
+
+1. **Check current phase:**
+   ```python
+   if requirements_doc_exists and approved:
+       if diagrams_exist and tickets_exist:
+           PHASE = 3  # Development
+       else:
+           PHASE = 2  # Planning
+   else:
+       PHASE = 1  # Discovery
+   ```
+
+2. **Create session log** in historyMD/
+
+3. **Review context:**
+   - Previous session summary
+   - Current ticket (if Phase 3)
+   - Blockers or issues
+
+**DURING DEVELOPMENT (Phase 3):**
+
+1. **Work ONE ticket at a time:**
+   - Read ticket from IN_PROGRESS.md
+   - Understand acceptance criteria
+   - Check dependencies are met
+   - Implement solution
+   - Update ticket status
+
+2. **Follow ALL code quality rules:**
+   - 07_clean_code_principles.mdc for quality
+   - 08_cod_style.mdc for style
+   - 12_designs_patterns.mdc for patterns
+   - Type hints ALWAYS
+   - Functions ≤ 20 lines
+   - Files ≤ 200 lines
+   - One responsibility per file
+
+3. **Apply domain-specific rules:**
+   - 15_llm_uses_rules.mdc if working with LLMs
+   - 16_mcp_implementation_guide.mdc if MCP project
+   - 13_workflow_modern.mdc for ML pipelines
+   - 17_domain_driven_design.mdc for complex business domains
+
+4. **Before marking ticket complete:**
+   ```markdown
+   - [ ] All acceptance criteria met
+   - [ ] All tests passing
+   - [ ] Code reviewed (self-review)
+   - [ ] Documentation updated
+   - [ ] Logged in historyMD
+   - [ ] Committed to git
+   ```
+
+5. **Move ticket to COMPLETED.md**
+
+6. **Update metrics in tickets/README.md**
+
+**AT END OF EACH SESSION:**
+
+1. **Update historyMD:**
+   - Complete session log
+   - Document all code changes
+   - Note decisions made
+   - Log errors and fixes
+   - Update README.md
+
+2. **Update tickets:**
+   - Move tickets to correct states
+   - Update progress percentages
+   - Note blockers
+
+3. **Apply quality checklist:**
+   - 10_quality_checklist_modern.mdc
+   - Verify all gates passed
+
+**CONTINUOUS THROUGHOUT PHASE 3:**
+
+- ✅ Log everything (03_history_logging_rule.mdc)
+- ✅ Follow architecture patterns (04_architecture_diagram_rule.mdc)
+- ✅ Maintain code quality (07_clean_code_principles.mdc, 08_cod_style.mdc)
+- ✅ Apply design patterns when appropriate (12_designs_patterns.mdc)
+- ✅ Review code before committing (11_code_review.mdc)
+- ✅ Refactor when needed (14_refactoring_modern.mdc)
+- ✅ Track progress (06_project_tracking.mdc)
+
+---
+
+## 🔄 PHASE TRANSITIONS
+
+### **Phase 1 → Phase 2 Transition:**
+
+**Requirements:**
+- ✅ Requirements document complete
+- ✅ All 27 questions answered
+- ✅ User explicitly approved
+
+**Triggers:**
+- User says: "Requirements approved, let's continue"
+- User says: "Let's start planning"
+- User says: "Create the architecture"
+
+**Action:**
+- Switch to Phase 2
+- Activate 04_architecture_diagram_rule.mdc
+- Create diagrams/ directory
+- Start diagram creation
+
+### **Phase 2 → Phase 3 Transition:**
+
+**Requirements:**
+- ✅ All architecture diagrams created
+- ✅ All diagrams approved by user
+- ✅ All tickets created
+- ✅ Ticket list approved by user
+- ✅ First ticket moved to IN_PROGRESS
+
+**Triggers:**
+- User says: "Diagrams look good, let's code"
+- User says: "Start development"
+- User says: "Let's begin with first ticket"
+
+**Action:**
+- Switch to Phase 3
+- Activate ALL code quality rules
+- Work on first ticket from IN_PROGRESS.md
+- Follow development workflow
+
+---
+
+## 📋 RULE CLASSIFICATION BY PHASE
+
+### **PHASE 1 RULES (Discovery):**
+
+| Rule | Purpose | When to Apply |
+|------|---------|---------------|
+| `02_requirements_gathering_rule.mdc` | Capture requirements | Project start, ALWAYS FIRST |
+| `03_history_logging_rule.mdc` | Document everything | CONTINUOUS, all phases |
+
+**Total Active Rules in Phase 1:** 2
+
+### **PHASE 2 RULES (Planning):**
+
+| Rule | Purpose | When to Apply |
+|------|---------|---------------|
+| `04_architecture_diagram_rule.mdc` | Visual system design | After requirements approved |
+| `05_ticket_system_rule.mdc` | Task breakdown | After diagrams approved |
+| `03_history_logging_rule.mdc` | Document everything | CONTINUOUS |
+| `06_project_tracking.mdc` | CSV tracking real-time | Mandatory, always active |
+
+**Total Active Rules in Phase 2:** 5 (3 mandatory, 2 optional)
+
+### **PHASE 3 RULES (Development):**
+
+#### **Mandatory (Always Active):**
+
+| Category | Rules | Purpose |
+|----------|-------|---------|
+| **Project Management** | `03_history_logging_rule.mdc` | Document all work |
+| **Project Management** | `05_ticket_system_rule.mdc` | One ticket at a time |
+| **Code Quality** | `07_clean_code_principles.mdc` | Clean code principles |
+| **Code Quality** | `08_cod_style.mdc` | Style guidelines |
+| **Code Quality** | `09_general_rules.mdc` | General best practices |
+| **Quality Assurance** | `10_quality_checklist_modern.mdc` | Quality gates |
+| **Quality Assurance** | `11_code_review.mdc` | Review before commit |
+
+**Mandatory Rules in Phase 3:** 8
+
+#### **Contextual (Apply When Relevant):**
+
+| Rule | When to Apply |
+|------|---------------|
+| `12_designs_patterns.mdc` | When design patterns needed (Factory, Strategy, Observer) |
+| `15_llm_uses_rules.mdc` | When integrating LLMs (OpenAI, local models) |
+| `16_mcp_implementation_guide.mdc` | When building MCP projects |
+| `13_workflow_modern.mdc` | When creating ML pipelines |
+| `14_refactoring_modern.mdc` | When refactoring existing code |
+| `17_domain_driven_design.mdc` | When implementing complex business logic |
+| `06_project_tracking.mdc` | MANDATORY CSV tracking after each interaction |
+
+**Contextual Rules in Phase 3:** 8
+
+**Total Active Rules in Phase 3:** 16 (8 always, 8 contextual)
+
+---
+
+## 🤖 AI ASSISTANT DECISION TREE
+
+### **At Start of Conversation:**
+
+```
+1. Check for requirements document
+   ├─ NO → PHASE 1: Start requirements gathering
+   └─ YES → Check if approved
+       ├─ NO → Continue Phase 1: Complete requirements
+       └─ YES → Check for diagrams/
+           ├─ NO → PHASE 2: Create architecture diagrams
+           └─ YES → Check for tickets/
+               ├─ NO → PHASE 2: Create ticket system
+               └─ YES → PHASE 3: Development mode
+                   └─ Check IN_PROGRESS.md
+                       ├─ Has ticket → Work on that ticket
+                       └─ Empty → Move next ticket from BACKLOG
+```
+
+### **During Conversation:**
+
+**If user asks to code but Phase 1 incomplete:**
+```
+AI: "Before we start coding, I need to gather complete requirements 
+     following our requirements_gathering_rule. Let me ask you the 
+     essential questions to ensure we build the right solution..."
+```
+
+**If user asks to code but Phase 2 incomplete:**
+```
+AI: "Requirements are approved ✅. Before coding, let's create 
+     architecture diagrams to visualize the system design, then 
+     break it into actionable tickets. This will make development 
+     much smoother..."
+```
+
+**If Phase 3 and user requests new code:**
+```
+AI: "I'll work on this following our established architecture and 
+     code quality rules. Let me check which ticket this relates to..."
+```
+
+---
+
+## 📊 PHASE-SPECIFIC RULE PRIORITY
+
+### **Phase 1 Priority Order:**
+1. **02_requirements_gathering_rule.mdc** (PRIMARY - drives everything)
+2. **03_history_logging_rule.mdc** (CONTINUOUS - document all)
+
+### **Phase 2 Priority Order:**
+1. **04_architecture_diagram_rule.mdc** (FIRST - visual design)
+2. **05_ticket_system_rule.mdc** (SECOND - task breakdown)
+3. **03_history_logging_rule.mdc** (CONTINUOUS - document all)
+4. **06_project_tracking.mdc** (MANDATORY - CSV real-time)
+
+### **Phase 3 Priority Order:**
+
+**Layer 1: Project Management (CRITICAL)**
+1. `03_history_logging_rule.mdc` - Document EVERYTHING
+2. `05_ticket_system_rule.mdc` - Work one ticket at a time
+3. `10_quality_checklist_modern.mdc` - Quality gates before commit
+
+**Layer 2: Architecture & Structure (FOUNDATIONAL)**
+4. `04_architecture_diagram_rule.mdc` - Reference diagrams
+
+**Layer 3: Code Quality (ALWAYS)**
+5. `07_clean_code_principles.mdc` - Clean code
+6. `08_cod_style.mdc` - Style
+7. `09_general_rules.mdc` - General practices
+8. `11_code_review.mdc` - Review process
+
+**Layer 4: Context-Specific (WHEN NEEDED)**
+9. `12_designs_patterns.mdc` - If patterns needed
+10. `15_llm_uses_rules.mdc` - If LLM integration
+11. `16_mcp_implementation_guide.mdc` - If MCP project
+12. `13_workflow_modern.mdc` - If ML pipelines
+13. `14_refactoring_modern.mdc` - If refactoring
+14. `17_domain_driven_design.mdc` - If complex business domain
+15. `06_project_tracking.mdc` - CSV tracking (mandatory)
+
+---
+
+## 🎯 CONTEXT DETECTION
+
+The AI assistant should detect project context and apply relevant rules:
+
+### **Project Type Detection:**
+
+```python
+def detect_project_type(requirements_doc: str, tickets: list) -> str:
+    """Detect project type to apply relevant rules."""
+    
+    # Check for MCP indicators
+    if "MCP" in requirements_doc or "Model Context Protocol" in requirements_doc:
+        return "MCP_PROJECT"
+        # → Activate: 16_mcp_implementation_guide.mdc
+    
+    # Check for LLM integration
+    if any(keyword in requirements_doc for keyword in ["OpenAI", "GPT", "Claude", "LLM", "language model"]):
+        return "LLM_PROJECT"
+        # → Activate: 15_llm_uses_rules.mdc
+    
+    # Check for ML pipeline
+    if any(keyword in requirements_doc for keyword in ["training", "model", "ML", "machine learning"]):
+        return "ML_PROJECT"
+        # → Activate: 13_workflow_modern.mdc
+    
+    # Check for data-heavy work
+    data_tickets = [t for t in tickets if "[DATA]" in t]
+    if len(data_tickets) > len(tickets) * 0.4:  # >40% data tickets
+        return "DATA_PROJECT"
+        # → Emphasize: data quality rules
+    
+    return "GENERAL_AI_PROJECT"
+```
+
+### **Task Type Detection:**
+
+```python
+def detect_task_type(current_ticket: str) -> list[str]:
+    """Detect what type of work is being done."""
+    
+    active_rules = ["03_history_logging_rule.mdc"]  # Always active
+    
+    # Check ticket category
+    if "[DATA]" in current_ticket:
+        active_rules.extend([
+            "13_workflow_modern.mdc",  # Data pipeline patterns
+            "10_quality_checklist_modern.mdc"  # Data leakage checks
+        ])
+    
+    elif "[MODEL]" in current_ticket:
+        active_rules.extend([
+            "13_workflow_modern.mdc",  # ML workflow
+            "10_quality_checklist_modern.mdc",  # ML quality checks
+            "12_designs_patterns.mdc"  # Model patterns
+        ])
+    
+    elif "[INFRA]" in current_ticket:
+        active_rules.extend([
+            "09_general_rules.mdc"  # Docker, deployment
+        ])
+    
+    elif any(keyword in current_ticket.lower() for keyword in ["refactor", "improve", "cleanup"]):
+        active_rules.append("14_refactoring_modern.mdc")
+    
+    # LLM work detection
+    if any(keyword in current_ticket.lower() for keyword in ["llm", "gpt", "openai", "chat"]):
+        active_rules.append("15_llm_uses_rules.mdc")
+    
+    # MCP work detection
+    if "mcp" in current_ticket.lower():
+        active_rules.append("16_mcp_implementation_guide.mdc")
+    
+    return active_rules
+```
+
+---
+
+## 🚨 CRITICAL WORKFLOW VIOLATIONS
+
+### **Auto-Reject Scenarios:**
+
+**❌ VIOLATION 1: Coding before requirements**
+```
+User: "Create an ML model"
+AI: [Starts coding without requirements]
+```
+**CORRECT:**
+```
+AI: "Before coding, I need to gather requirements following our 
+     requirements_gathering_rule. Let me ask the 27 essential questions..."
+```
+
+**❌ VIOLATION 2: Skipping diagrams**
+```
+Requirements approved → Creates tickets immediately
+```
+**CORRECT:**
+```
+Requirements approved → Creates diagrams FIRST → Then creates tickets
+```
+
+**❌ VIOLATION 3: Working multiple tickets**
+```
+Ticket A in IN_PROGRESS → Starts working on Ticket B
+```
+**CORRECT:**
+```
+Finish Ticket A completely → Move to COMPLETED → Then start Ticket B
+```
+
+**❌ VIOLATION 4: Not logging work**
+```
+Makes code changes → Doesn't update historyMD
+```
+**CORRECT:**
+```
+Every change → Logged in session log → Code change documented
+```
+
+**❌ VIOLATION 5: Ignoring code quality rules**
+```
+Creates 500-line file, no type hints, no tests
+```
+**CORRECT:**
+```
+Files ≤ 200 lines, complete type hints, tests for critical logic
+```
+
+---
+
+## 📚 RULE DEPENDENCIES
+
+### **Foundation Rules (Required for all projects):**
+```
+02_requirements_gathering_rule.mdc
+    ↓
+03_history_logging_rule.mdc (always active from start)
+    ↓
+04_architecture_diagram_rule.mdc
+    ↓
+05_ticket_system_rule.mdc
+```
+
+### **Code Quality Stack (Phase 3 only):**
+```
+07_clean_code_principles.mdc + 08_cod_style.mdc (quality)
+    ↓
+12_designs_patterns.mdc (patterns when needed)
+    ↓
+11_code_review.mdc + 10_quality_checklist_modern.mdc (before commit)
+    ↓
+14_refactoring_modern.mdc (when improving code)
+```
+
+### **Specialized Stacks (Contextual):**
+
+**LLM Projects:**
+```
+09_general_rules.mdc → 15_llm_uses_rules.mdc → 10_quality_checklist_modern.mdc
+```
+
+**MCP Projects:**
+```
+16_mcp_implementation_guide.mdc → 15_llm_uses_rules.mdc
+```
+
+**ML Pipeline Projects:**
+```
+13_workflow_modern.mdc → 12_designs_patterns.mdc → 10_quality_checklist_modern.mdc
+```
+
+---
+
+## 🎓 PHILOSOPHY
+
+> **"The right rule at the right time. Not all rules, all the time."**
+
+### **Principles:**
+
+1. **Sequential Phases:** Can't skip ahead (requirements → diagrams → tickets → code)
+
+2. **Phase-Appropriate Rules:** Requirements phase doesn't need code quality rules
+
+3. **Contextual Application:** MCP rules only for MCP projects
+
+4. **Continuous Logging:** historyMD active in ALL phases
+
+5. **One Focus:** One ticket, one file, one responsibility at a time
+
+### **Benefits:**
+
+✅ **Clarity:** Always know which rules apply
+✅ **Focus:** Not overwhelmed by all rules at once
+✅ **Quality:** Right practices at right time
+✅ **Speed:** No confusion about what to do next
+✅ **Consistency:** Same workflow every project
+
+---
+
+## 🔍 QUICK REFERENCE
+
+### **"What phase am I in?"**
+
+```
+Check for these files:
+- No requirements doc → PHASE 1
+- Has requirements, no diagrams/ → PHASE 2 (diagrams step)
+- Has diagrams/, no tickets/ → PHASE 2 (tickets step)
+- Has tickets/ with IN_PROGRESS.md → PHASE 3
+```
+
+### **"Which rules do I follow?"**
+
+```
+PHASE 1 → 2 rules (requirements, history)
+PHASE 2 → 5 rules (diagrams, tickets, history, tracking, scrum)
+PHASE 3 → 15 rules (8 always + 7 contextual)
+```
+
+### **"Can I start coding?"**
+
+```
+Only if:
+✅ Requirements complete and approved
+✅ Diagrams complete and approved
+✅ Tickets created and prioritized
+✅ At least one ticket in IN_PROGRESS
+✅ Currently in PHASE 3
+```
+
+---
+
+## ✅ MASTER COMPLIANCE CHECKLIST
+
+Before ANY action, the AI assistant must verify:
+
+**Phase Detection:**
+- [ ] Current phase identified correctly
+- [ ] Previous phase completed
+- [ ] User approved transition
+
+**Rule Activation:**
+- [ ] Phase-specific rules active
+- [ ] Context-specific rules identified
+- [ ] Irrelevant rules ignored
+
+**Work Execution:**
+- [ ] Following current ticket (if Phase 3)
+- [ ] Applying active rules
+- [ ] Logging in historyMD
+- [ ] Updating progress
+
+**Quality Gates:**
+- [ ] All applicable checklists passed
+- [ ] User approval when required
+- [ ] Documentation complete
+- [ ] Ready for next step
+
+---
+
+## 🎯 SUCCESS METRICS
+
+### **Phase 1 Success:**
+- Requirements document complete
+- All questions answered
+- User approval obtained
+- Time: 1-2 hours
+
+### **Phase 2 Success:**
+- 4-6 diagrams created
+- All components visualized
+- 15-30 tickets created
+- Dependencies mapped
+- User approval obtained
+- Time: 3-6 hours
+
+### **Phase 3 Success:**
+- Tickets completed one by one
+- Code quality maintained
+- All changes logged
+- Project progressing steadily
+- Time: Varies by project size
+
+---
+
+## 💡 REMEMBER
+
+> **"A well-orchestrated workflow is invisible. You just know what to do next."**
+
+**This master rule ensures:**
+- 🎯 Clear progression through project phases
+- 📋 Right rules at right time
+- 🚫 No skipping critical steps
+- ✅ Consistent quality across all projects
+- 📚 Complete documentation of journey
+
+**Follow the phases. Apply the rules. Build amazing AI/ML systems.** 🚀
+
+---
+
+**Version:** 1.0  
+**Last Updated:** October 2025  
+**Author:** AI Engineer Path - Cursor Rules  
+**Status:** MASTER RULE - Governs All Other Rules  
+**Priority:** 1 (Highest - Always check first)

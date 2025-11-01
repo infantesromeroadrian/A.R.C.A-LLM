@@ -1,0 +1,596 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Comprehensive Python coding style guidelines for AI/ML projects with strict PEP 8 compliance, type safety, and performance optimization.
+globs: src/**/*.py, tests/**/*.py, scripts/**/*.py, notebooks/**/*.py
+alwaysApply: true
+---
+
+# 🐍 Modern Python Code Style for AI/ML Projects
+
+## 🎯 **Philosophy: Clean, Fast, and ML-Ready Code**
+
+> *"Code style isn't about looking pretty - it's about building maintainable AI systems that scale."*
+
+---
+
+## 🚀 **THE 5 MODERN PILLARS**
+
+### **1. 🏷️ NAMING THAT SCALES**
+
+Names should tell the complete story in AI/ML contexts.
+
+```python
+# ❌ BAD - Generic and unclear
+def process(data, model, params):
+    result = model.predict(data)
+    return result
+
+# ✅ GOOD - ML-specific and clear
+def predict_customer_churn(
+    customer_features: pd.DataFrame,
+    trained_classifier: CatBoostClassifier, 
+    prediction_threshold: float = 0.5
+) -> pd.Series[bool]:
+    """Predict customer churn using trained classification model."""
+    raw_predictions = trained_classifier.predict_proba(customer_features)[:, 1]
+    return pd.Series(raw_predictions >= prediction_threshold)
+```
+
+**Modern Naming Rules:**
+
+```python
+# Variables & Functions: snake_case with domain context
+user_engagement_score = calculate_engagement_metrics(user_activity)
+model_performance_report = generate_classification_report(y_true, y_pred)
+
+# Classes: PascalCase with clear purpose  
+class TextEmbeddingGenerator:
+class ModelPerformanceTracker:
+class DataQualityValidator:
+
+# Constants: SCREAMING_SNAKE_CASE with units/context
+MAX_TRAINING_EPOCHS = 1000
+DEFAULT_LEARNING_RATE = 1e-4
+MODEL_CHECKPOINT_INTERVAL_SECONDS = 300
+
+# Type aliases: PascalCase for clarity
+FeatureVector = np.ndarray[np.float32]
+ModelWeights = dict[str, torch.Tensor]
+PredictionBatch = list[tuple[str, float]]
+```
+
+---
+
+### **2. 🔧 MODERN PYTHON PATTERNS (3.11+)**
+
+Use the latest Python features for cleaner, faster code.
+
+```python
+from typing import Self, Protocol, TypeVar, Generic
+from pathlib import Path
+import tomllib  # Built-in TOML support
+from dataclasses import dataclass, field
+from enum import StrEnum, auto
+
+# ✅ Modern enums for model configuration
+class ModelType(StrEnum):
+    RANDOM_FOREST = auto()
+    GRADIENT_BOOSTING = auto() 
+    NEURAL_NETWORK = auto()
+    TRANSFORMER = auto()
+
+# ✅ Modern dataclasses with defaults and validation
+@dataclass(frozen=True, slots=True)  # Memory efficient
+class TrainingConfig:
+    """Modern training configuration with validation."""
+    model_type: ModelType
+    learning_rate: float = 1e-4
+    batch_size: int = 32
+    max_epochs: int = 100
+  
+    # Field with factory for mutable defaults
+    callbacks: list[str] = field(default_factory=list)
+  
+    def __post_init__(self):
+        """Validate configuration on creation."""
+        if self.learning_rate <= 0:
+            raise ValueError("Learning rate must be positive")
+        if self.batch_size < 1:
+            raise ValueError("Batch size must be at least 1")
+
+# ✅ Modern protocols for dependency injection
+class DataProcessor(Protocol):
+    """Protocol for data processing implementations."""
+    def process_batch(self, data: pd.DataFrame) -> pd.DataFrame: ...
+    def validate_schema(self, data: pd.DataFrame) -> bool: ...
+
+# ✅ Modern pattern matching for model creation  
+def create_model(config: TrainingConfig) -> BaseEstimator:
+    """Create model using pattern matching."""
+    match config.model_type:
+        case ModelType.RANDOM_FOREST:
+            return RandomForestClassifier(n_estimators=100)
+        case ModelType.GRADIENT_BOOSTING:
+            return GradientBoostingClassifier(learning_rate=config.learning_rate)
+        case ModelType.NEURAL_NETWORK:
+            return MLPClassifier(learning_rate_init=config.learning_rate)
+        case _:
+            raise ValueError(f"Unsupported model type: {config.model_type}")
+
+# ✅ Method chaining with Self type
+class DataPipeline:
+    """Modern data pipeline with fluent interface."""
+  
+    def __init__(self, data: pd.DataFrame):
+        self.data = data.copy()
+  
+    def remove_outliers(self, columns: list[str], std_threshold: float = 3.0) -> Self:
+        """Remove outliers and return self for chaining."""
+        for col in columns:
+            mean, std = self.data[col].mean(), self.data[col].std()
+            mask = abs(self.data[col] - mean) <= std_threshold * std
+            self.data = self.data[mask]
+        return self
+  
+    def scale_features(self, columns: list[str]) -> Self:
+        """Scale features using StandardScaler."""
+        scaler = StandardScaler()
+        self.data[columns] = scaler.fit_transform(self.data[columns])
+        return self
+  
+    def build(self) -> pd.DataFrame:
+        """Get the final processed dataset."""
+        return self.data.copy()
+```
+
+---
+
+### **3. ⚡ TYPE SAFETY FOR AI/ML**
+
+Comprehensive typing that catches ML-specific bugs.
+
+```python
+from numpy.typing import NDArray
+from typing import TypeVar, Protocol, Literal, overload
+
+# ✅ Modern type aliases for ML
+Features = NDArray[np.float32]  # Input features
+Targets = NDArray[np.int32]     # Classification targets  
+Predictions = NDArray[np.float32]  # Model predictions
+Embeddings = NDArray[np.float32]   # Vector embeddings
+
+# ✅ Generic types for model interfaces
+ModelT = TypeVar('ModelT', bound='BaseMLModel')
+
+class MLModel(Protocol[ModelT]):
+    """Protocol for ML models with comprehensive typing."""
+  
+    def fit(self, X: Features, y: Targets) -> Self: ...
+    def predict(self, X: Features) -> Predictions: ...
+    def score(self, X: Features, y: Targets) -> float: ...
+
+# ✅ Overloaded functions for different data types
+@overload
+def preprocess_data(data: pd.DataFrame) -> pd.DataFrame: ...
+
+@overload  
+def preprocess_data(data: NDArray[np.float32]) -> NDArray[np.float32]: ...
+
+def preprocess_data(data: pd.DataFrame | NDArray[np.float32]) -> pd.DataFrame | NDArray[np.float32]:
+    """Preprocess data supporting multiple input types."""
+    match data:
+        case pd.DataFrame():
+            return data.fillna(0).select_dtypes(include=[np.number])
+        case np.ndarray():
+            return np.nan_to_num(data, nan=0.0)
+        case _:
+            raise TypeError(f"Unsupported data type: {type(data)}")
+
+# ✅ Literal types for model configurations
+def train_text_classifier(
+    texts: list[str],
+    labels: list[str], 
+    model_type: Literal["bert", "roberta", "distilbert"] = "bert"
+) -> transformers.PreTrainedModel:
+    """Train text classifier with specific model architectures."""
+    pass
+```
+
+---
+
+### **4. 🏗️ COMPOSITION OVER INHERITANCE**
+
+Build flexible AI systems using modern composition patterns.
+
+```python
+# ✅ Component-based ML pipeline
+@dataclass
+class MLPipelineComponents:
+    """Container for ML pipeline components."""
+    data_loader: DataLoader
+    preprocessor: DataPreprocessor  
+    feature_engineer: FeatureEngineer
+    model_trainer: ModelTrainer
+    evaluator: ModelEvaluator
+    model_store: ModelStore
+
+class MLPipeline:
+    """Modern ML pipeline using composition."""
+  
+    def __init__(self, components: MLPipelineComponents):
+        self.components = components
+        self.logger = logging.getLogger(__name__)
+  
+    async def run_training_pipeline(self, config: TrainingConfig) -> ModelMetrics:
+        """Run complete training pipeline asynchronously."""
+        self.logger.info("Starting ML training pipeline")
+      
+        # Load and validate data
+        raw_data = await self.components.data_loader.load_async(config.data_path)
+      
+        # Process data through pipeline
+        processed_data = (
+            self.components.preprocessor
+            .clean_data(raw_data)
+            .pipe(self.components.feature_engineer.engineer_features)
+        )
+      
+        # Train model
+        trained_model = self.components.model_trainer.train(
+            processed_data, config
+        )
+      
+        # Evaluate and store
+        metrics = self.components.evaluator.evaluate(trained_model, processed_data)
+        model_id = await self.components.model_store.save_async(trained_model)
+      
+        self.logger.info(f"Training completed. Model ID: {model_id}")
+        return metrics
+
+# ✅ Dependency injection factory
+class MLPipelineFactory:
+    """Factory for creating configured ML pipelines."""
+  
+    @staticmethod
+    def create_classification_pipeline(config: PipelineConfig) -> MLPipeline:
+        """Create pipeline optimized for classification tasks."""
+        components = MLPipelineComponents(
+            data_loader=CSVDataLoader(config.data_config),
+            preprocessor=ClassificationPreprocessor(),
+            feature_engineer=StandardFeatureEngineer(),
+            model_trainer=SklearnModelTrainer(),
+            evaluator=ClassificationEvaluator(),
+            model_store=ModelStore(config.storage_path)
+        )
+        return MLPipeline(components)
+```
+
+---
+
+### **5. 🚨 ERROR HANDLING FOR PRODUCTION ML**
+
+Robust error handling that helps debug ML-specific issues.
+
+```python
+# ✅ ML-specific exception hierarchy
+class MLPipelineError(Exception):
+    """Base exception for ML pipeline errors."""
+  
+    def __init__(self, message: str, context: dict[str, Any] | None = None):
+        super().__init__(message)
+        self.context = context or {}
+        self.timestamp = datetime.now(UTC)
+
+class DataValidationError(MLPipelineError):
+    """Data doesn't meet ML requirements."""
+    pass
+
+class ModelTrainingError(MLPipelineError):
+    """Model training failed."""
+    pass
+
+class ModelInferenceError(MLPipelineError):
+    """Model prediction failed."""
+    pass
+
+# ✅ Context managers for ML operations
+from contextlib import contextmanager
+
+@contextmanager
+def training_session(config: TrainingConfig):
+    """Context manager for training sessions with cleanup."""
+    session_id = str(uuid.uuid4())
+    logger = logging.getLogger(__name__)
+  
+    try:
+        logger.info(f"Starting training session: {session_id}")
+        # Setup training environment
+        torch.manual_seed(config.random_seed)
+        np.random.seed(config.random_seed)
+      
+        yield session_id
+      
+    except Exception as e:
+        logger.error(f"Training session {session_id} failed: {e}")
+        # Cleanup on failure
+        cleanup_training_artifacts(session_id)
+        raise
+    finally:
+        logger.info(f"Training session {session_id} completed")
+
+# Usage
+async def train_model_safely(config: TrainingConfig) -> TrainedModel:
+    """Train model with comprehensive error handling."""
+    try:
+        with training_session(config) as session_id:
+            # Validate input data
+            data = await load_and_validate_data(config.data_path)
+          
+            # Train with timeout
+            model = await asyncio.wait_for(
+                train_model_async(data, config),
+                timeout=config.max_training_time_seconds
+            )
+          
+            return model
+          
+    except FileNotFoundError as e:
+        raise DataValidationError(
+            "Training data not found",
+            context={"data_path": str(config.data_path), "error": str(e)}
+        ) from e
+      
+    except asyncio.TimeoutError:
+        raise ModelTrainingError(
+            "Training exceeded maximum time limit",
+            context={"max_time": config.max_training_time_seconds}
+        )
+      
+    except MemoryError:
+        raise ModelTrainingError(
+            "Insufficient memory for training",
+            context={"batch_size": config.batch_size, "suggestion": "Reduce batch size"}
+        )
+```
+
+---
+
+## 🧪 **TESTING PATTERNS FOR ML**
+
+```python
+# ✅ Property-based testing for ML functions
+from hypothesis import given, strategies as st
+import hypothesis.extra.numpy as hnp
+
+class TestFeatureEngineering:
+    """Test feature engineering with property-based testing."""
+  
+    @given(
+        data=hnp.arrays(
+            dtype=np.float32,
+            shape=hnp.array_shapes(min_dims=2, max_dims=2),
+            elements=st.floats(min_value=-100, max_value=100, allow_nan=False)
+        )
+    )
+    def test_normalization_properties(self, data: NDArray[np.float32]):
+        """Test that normalization maintains expected properties."""
+        # Skip if data is too small
+        assume(data.shape[0] > 1 and data.shape[1] > 0)
+      
+        normalized = normalize_features(data)
+      
+        # Properties that should always hold
+        assert normalized.shape == data.shape
+        assert not np.any(np.isnan(normalized))
+        assert not np.any(np.isinf(normalized))
+      
+        # Statistical properties (allowing for floating point precision)
+        means = np.mean(normalized, axis=0)
+        stds = np.std(normalized, axis=0)
+      
+        np.testing.assert_allclose(means, 0, atol=1e-6)
+        np.testing.assert_allclose(stds, 1, atol=1e-6)
+
+# ✅ Fixtures for ML testing
+@pytest.fixture
+def sample_classification_data():
+    """Generate consistent sample data for classification tests."""
+    np.random.seed(42)  # Reproducible test data
+    X, y = make_classification(
+        n_samples=1000,
+        n_features=10,
+        n_classes=2,
+        random_state=42
+    )
+    return pd.DataFrame(X), pd.Series(y)
+
+@pytest.fixture
+def trained_model(sample_classification_data):
+    """Pre-trained model for testing."""
+    X, y = sample_classification_data
+    model = RandomForestClassifier(random_state=42)
+    model.fit(X, y)
+    return model
+```
+
+---
+
+## ⚡ **PERFORMANCE PATTERNS**
+
+```python
+# ✅ Async data processing for large datasets
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+class AsyncDataProcessor:
+    """Process large datasets asynchronously."""
+  
+    def __init__(self, max_workers: int = 4):
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
+  
+    async def process_large_dataset(
+        self,
+        data_paths: list[Path],
+        processor_fn: Callable[[pd.DataFrame], pd.DataFrame]
+    ) -> list[pd.DataFrame]:
+        """Process multiple data files concurrently."""
+      
+        async def process_single_file(path: Path) -> pd.DataFrame:
+            # Run CPU-bound work in thread pool
+            loop = asyncio.get_event_loop()
+            data = await loop.run_in_executor(
+                self.executor, pd.read_csv, path
+            )
+            return await loop.run_in_executor(
+                self.executor, processor_fn, data
+            )
+      
+        # Process all files concurrently
+        tasks = [process_single_file(path) for path in data_paths]
+        return await asyncio.gather(*tasks)
+
+# ✅ Memory-efficient batch processing
+def process_dataset_in_batches(
+    dataset_path: Path,
+    batch_size: int = 10000,
+    transform_fn: Callable[[pd.DataFrame], pd.DataFrame] | None = None
+) -> Iterator[pd.DataFrame]:
+    """Process large datasets in memory-efficient batches."""
+  
+    with pd.read_csv(dataset_path, chunksize=batch_size) as reader:
+        for i, chunk in enumerate(reader):
+            # Apply transformations if provided
+            if transform_fn:
+                chunk = transform_fn(chunk)
+          
+            # Log progress
+            if i % 10 == 0:
+                logging.info(f"Processed {i * batch_size:,} rows")
+          
+            yield chunk
+          
+            # Explicit memory cleanup
+            del chunk
+
+# ✅ Caching expensive computations
+from functools import lru_cache
+import joblib
+
+class ModelPredictor:
+    """Predictor with intelligent caching."""
+  
+    def __init__(self, model_path: Path):
+        self.model = joblib.load(model_path)
+        # Cache for feature transformations
+        self._feature_cache = {}
+  
+    @lru_cache(maxsize=1000)
+    def _compute_features(self, text: str) -> tuple[float, ...]:
+        """Compute features with LRU caching."""
+        # Expensive feature computation
+        features = extract_text_features(text)
+        return tuple(features)  # Must be hashable for cache
+  
+    def predict(self, texts: list[str]) -> list[float]:
+        """Predict with caching for repeated inputs."""
+        features = [
+            np.array(self._compute_features(text)) 
+            for text in texts
+        ]
+        return self.model.predict_proba(np.vstack(features))[:, 1]
+```
+
+---
+
+## 📋 **QUICK STYLE CHECKLIST**
+
+Before every commit:
+
+- [ ] **Names are domain-specific** (ML/AI terminology)
+- [ ] **Type hints on all functions** (including numpy/pandas types)
+- [ ] **Modern Python features** (3.11+ syntax)
+- [ ] **Composition over inheritance** (dependency injection)
+- [ ] **Specific error handling** (ML-aware exceptions)
+- [ ] **Async for I/O operations** (data loading, API calls)
+- [ ] **Memory-efficient patterns** (generators, batch processing)
+- [ ] **Tests with fixtures** (property-based when possible)
+- [ ] **Logging with context** (session IDs, metrics)
+- [ ] **No hardcoded values** (use configuration objects)
+
+---
+
+## 🔧 **MODERN TOOLCHAIN**
+
+```toml
+# pyproject.toml - Modern Python project configuration
+[project]
+name = "ml-project"
+requires-python = ">=3.11"
+dependencies = [
+    "pandas>=2.0",
+    "numpy>=1.24",
+    "scikit-learn>=1.3",
+    "pydantic>=2.0",
+    "asyncio-pools>=0.1",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+
+[tool.ruff]
+target-version = "py311"
+select = ["E", "W", "F", "I", "N", "B", "A", "C4", "UP"]
+ignore = ["E501"]  # Line length handled by black
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "--cov=src --cov-report=html --cov-fail-under=90"
+```
+
+```bash
+# Pre-commit hooks
+pip install pre-commit
+pre-commit install
+
+# .pre-commit-config.yaml
+repos:
+  - repo: https://github.com/psf/black
+    rev: 23.7.0
+    hooks:
+      - id: black
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.0.284
+    hooks:
+      - id: ruff
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.5.1
+    hooks:
+      - id: mypy
+```
+
+---
+
+## 💡 **REMEMBER**
+
+> **"In ML, code style isn't just about aesthetics - it's about building systems that can handle real-world data at scale."**
+
+Modern code style for AI/ML focuses on:
+
+- **Type safety** to catch data shape mismatches
+- **Async patterns** for handling large datasets
+- **Composition** for flexible ML pipelines
+- **Error context** for debugging model failures
+- **Performance** for production workloads
+
+**Write code that your future ML engineer self will thank you for!** 🚀

@@ -1,0 +1,770 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+---
+description: Comprehensive design patterns guide for AI/ML projects with SOLID principles, performance optimization, and industry best practices.
+globs: src/**/*.py, tests/**/*.py, architecture/**/*.py
+alwaysApply: true
+---
+
+# 🎨 Modern Design Patterns for AI/ML Projects
+
+## 🎯 **Philosophy: Patterns That Actually Get Used**
+
+> *"Don't build cathedrals when you need bridges. Use patterns that solve real ML problems."*
+
+---
+
+## 🏗️ **THE 6 ESSENTIAL AI/ML PATTERNS**
+
+### **1. 🏭 Model Factory (The One You'll Always Use)**
+
+Create different models with a simple interface - no complex registration needed.
+
+```python
+from typing import Literal, Any
+from dataclasses import dataclass
+import numpy as np
+
+# ✅ Modern model factory with type safety
+@dataclass
+class ModelConfig:
+    """Simple model configuration."""
+    model_type: Literal["random_forest", "xgboost", "linear", "neural_net"]
+    params: dict[str, Any]
+    random_seed: int = 42
+
+class ModelFactory:
+    """Simple model factory for common ML models."""
+  
+    @staticmethod
+    def create_model(config: ModelConfig) -> Any:
+        """Create model based on configuration."""
+        match config.model_type:
+            case "random_forest":
+                from sklearn.ensemble import RandomForestClassifier
+                return RandomForestClassifier(
+                    random_state=config.random_seed,
+                    **config.params
+                )
+          
+            case "xgboost":
+                import xgboost as xgb
+                return xgb.XGBClassifier(
+                    random_state=config.random_seed,
+                    **config.params
+                )
+          
+            case "linear":
+                from sklearn.linear_model import LogisticRegression
+                return LogisticRegression(
+                    random_state=config.random_seed,
+                    **config.params
+                )
+          
+            case "neural_net":
+                from sklearn.neural_network import MLPClassifier
+                return MLPClassifier(
+                    random_state=config.random_seed,
+                    **config.params
+                )
+          
+            case _:
+                raise ValueError(f"Unknown model type: {config.model_type}")
+
+# Usage - Simple and clean
+config = ModelConfig(
+    model_type="random_forest",
+    params={"n_estimators": 100, "max_depth": 10}
+)
+model = ModelFactory.create_model(config)
+```
+
+---
+
+### **2. 🔧 Pipeline Builder (For Complex ML Workflows)**
+
+Build ML pipelines step-by-step with method chaining.
+
+```python
+from typing import Self, Callable
+from sklearn.preprocessing import StandardScaler
+from sklearn.feature_selection import SelectKBest
+import pandas as pd
+
+class MLPipelineBuilder:
+    """Build ML pipelines with fluent interface."""
+  
+    def __init__(self):
+        self.steps: list[tuple[str, Any]] = []
+  
+    def scale_features(self, scaler_type: str = "standard") -> Self:
+        """Add feature scaling step."""
+        scalers = {
+            "standard": StandardScaler(),
+            "minmax": MinMaxScaler(),
+            "robust": RobustScaler()
+        }
+        self.steps.append(("scaler", scalers[scaler_type]))
+        return self
+  
+    def select_features(self, k: int = 10, score_func: str = "f_classif") -> Self:
+        """Add feature selection step."""
+        from sklearn.feature_selection import f_classif, chi2
+      
+        score_functions = {"f_classif": f_classif, "chi2": chi2}
+        selector = SelectKBest(score_func=score_functions[score_func], k=k)
+        self.steps.append(("selector", selector))
+        return self
+  
+    def add_model(self, config: ModelConfig) -> Self:
+        """Add final model step."""
+        model = ModelFactory.create_model(config)
+        self.steps.append(("model", model))
+        return self
+  
+    def build(self) -> Pipeline:
+        """Build the final pipeline."""
+        from sklearn.pipeline import Pipeline
+        return Pipeline(self.steps)
+
+# Usage - Clean and readable
+pipeline = (MLPipelineBuilder()
+    .scale_features("standard")
+    .select_features(k=20)
+    .add_model(ModelConfig("random_forest", {"n_estimators": 100}))
+    .build())
+
+# Train the pipeline
+pipeline.fit(X_train, y_train)
+predictions = pipeline.predict(X_test)
+```
+
+---
+
+### **3. 🔌 Data Adapter (For Different Data Sources)**
+
+Handle different data sources with a common interface.
+
+```python
+from abc import ABC, abstractmethod
+from pathlib import Path
+import pandas as pd
+import asyncio
+
+class DataSource(ABC):
+    """Interface for data sources."""
+  
+    @abstractmethod
+    async def load_data(self) -> pd.DataFrame:
+        """Load data asynchronously."""
+        pass
+  
+    @abstractmethod
+    def validate_data(self, df: pd.DataFrame) -> bool:
+        """Validate loaded data."""
+        pass
+
+class CSVDataSource(DataSource):
+    """Load data from CSV files."""
+  
+    def __init__(self, file_path: Path):
+        self.file_path = file_path
+  
+    async def load_data(self) -> pd.DataFrame:
+        """Load CSV data asynchronously."""
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(None, pd.read_csv, self.file_path)
+  
+    def validate_data(self, df: pd.DataFrame) -> bool:
+        """Basic CSV validation."""
+        return not df.empty and len(df.columns) > 0
+
+class DatabaseSource(DataSource):
+    """Load data from database."""
+  
+    def __init__(self, connection_string: str, query: str):
+        self.connection_string = connection_string
+        self.query = query
+  
+    async def load_data(self) -> pd.DataFrame:
+        """Load database data asynchronously."""
+        import sqlalchemy
+        engine = sqlalchemy.create_engine(self.connection_string)
+      
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None, pd.read_sql, self.query, engine
+        )
+  
+    def validate_data(self, df: pd.DataFrame) -> bool:
+        """Database-specific validation."""
+        return not df.empty and len(df.columns) > 0
+
+class APIDataSource(DataSource):
+    """Load data from REST API."""
+  
+    def __init__(self, api_url: str, headers: dict[str, str] | None = None):
+        self.api_url = api_url
+        self.headers = headers or {}
+  
+    async def load_data(self) -> pd.DataFrame:
+        """Load API data asynchronously."""
+        import aiohttp
+      
+        async with aiohttp.ClientSession() as session:
+            async with session.get(self.api_url, headers=self.headers) as response:
+                data = await response.json()
+                return pd.DataFrame(data)
+  
+    def validate_data(self, df: pd.DataFrame) -> bool:
+        """API response validation."""
+        return not df.empty and len(df.columns) > 0
+
+# Usage - Same interface for all sources
+async def load_from_any_source(source: DataSource) -> pd.DataFrame:
+    """Load data from any source with validation."""
+    data = await source.load_data()
+  
+    if not source.validate_data(data):
+        raise ValueError("Data validation failed")
+  
+    return data
+
+# Use with different sources
+csv_source = CSVDataSource(Path("data.csv"))
+db_source = DatabaseSource("sqlite:///db.sqlite", "SELECT * FROM users")
+api_source = APIDataSource("https://api.example.com/data")
+
+# All work the same way
+data = await load_from_any_source(csv_source)
+```
+
+---
+
+### **4. 🎭 Strategy Pattern (For Swappable Algorithms)**
+
+Switch between different algorithms without changing your code.
+
+```python
+from typing import Protocol
+from abc import abstractmethod
+
+class HyperparameterOptimizer(Protocol):
+    """Protocol for hyperparameter optimization strategies."""
+  
+    def optimize(
+        self, 
+        model_config: ModelConfig, 
+        X: np.ndarray, 
+        y: np.ndarray
+    ) -> dict[str, Any]:
+        """Optimize hyperparameters and return best params."""
+        ...
+
+class GridSearchOptimizer:
+    """Grid search optimization strategy."""
+  
+    def __init__(self, param_grid: dict[str, list[Any]], cv: int = 5):
+        self.param_grid = param_grid
+        self.cv = cv
+  
+    def optimize(
+        self, 
+        model_config: ModelConfig, 
+        X: np.ndarray, 
+        y: np.ndarray
+    ) -> dict[str, Any]:
+        """Optimize using grid search."""
+        from sklearn.model_selection import GridSearchCV
+      
+        base_model = ModelFactory.create_model(model_config)
+      
+        grid_search = GridSearchCV(
+            base_model, 
+            self.param_grid, 
+            cv=self.cv,
+            n_jobs=-1
+        )
+      
+        grid_search.fit(X, y)
+        return grid_search.best_params_
+
+class RandomSearchOptimizer:
+    """Random search optimization strategy."""
+  
+    def __init__(self, param_distributions: dict[str, Any], n_iter: int = 100):
+        self.param_distributions = param_distributions
+        self.n_iter = n_iter
+  
+    def optimize(
+        self, 
+        model_config: ModelConfig, 
+        X: np.ndarray, 
+        y: np.ndarray
+    ) -> dict[str, Any]:
+        """Optimize using random search."""
+        from sklearn.model_selection import RandomizedSearchCV
+      
+        base_model = ModelFactory.create_model(model_config)
+      
+        random_search = RandomizedSearchCV(
+            base_model,
+            self.param_distributions,
+            n_iter=self.n_iter,
+            cv=5,
+            n_jobs=-1
+        )
+      
+        random_search.fit(X, y)
+        return random_search.best_params_
+
+class BayesianOptimizer:
+    """Bayesian optimization strategy."""
+  
+    def __init__(self, n_calls: int = 50):
+        self.n_calls = n_calls
+  
+    def optimize(
+        self, 
+        model_config: ModelConfig, 
+        X: np.ndarray, 
+        y: np.ndarray
+    ) -> dict[str, Any]:
+        """Optimize using Bayesian optimization."""
+        try:
+            from skopt import BayesSearchCV
+        except ImportError:
+            raise ImportError("Install scikit-optimize: pip install scikit-optimize")
+      
+        base_model = ModelFactory.create_model(model_config)
+      
+        # Define search space based on model type
+        search_spaces = self._get_search_space(model_config.model_type)
+      
+        bayes_search = BayesSearchCV(
+            base_model,
+            search_spaces,
+            n_iter=self.n_calls,
+            cv=5,
+            n_jobs=-1
+        )
+      
+        bayes_search.fit(X, y)
+        return bayes_search.best_params_
+  
+    def _get_search_space(self, model_type: str) -> dict[str, Any]:
+        """Get search space for model type."""
+        from skopt.space import Integer, Real
+      
+        spaces = {
+            "random_forest": {
+                "n_estimators": Integer(10, 300),
+                "max_depth": Integer(3, 20),
+                "min_samples_split": Integer(2, 20)
+            },
+            "xgboost": {
+                "n_estimators": Integer(10, 300),
+                "max_depth": Integer(3, 10),
+                "learning_rate": Real(0.01, 0.3)
+            }
+        }
+      
+        return spaces.get(model_type, {})
+
+# Usage - Easy to switch strategies
+class ModelOptimizer:
+    """Context for hyperparameter optimization."""
+  
+    def __init__(self, strategy: HyperparameterOptimizer):
+        self.strategy = strategy
+  
+    def optimize_model(
+        self, 
+        model_config: ModelConfig, 
+        X: np.ndarray, 
+        y: np.ndarray
+    ) -> ModelConfig:
+        """Optimize model using current strategy."""
+        best_params = self.strategy.optimize(model_config, X, y)
+      
+        return ModelConfig(
+            model_type=model_config.model_type,
+            params=best_params,
+            random_seed=model_config.random_seed
+        )
+
+# Use different strategies
+grid_optimizer = ModelOptimizer(GridSearchOptimizer({"n_estimators": [50, 100, 200]}))
+random_optimizer = ModelOptimizer(RandomSearchOptimizer({"n_estimators": [10, 300]}))
+bayes_optimizer = ModelOptimizer(BayesianOptimizer(n_calls=30))
+
+# All work the same way
+base_config = ModelConfig("random_forest", {"n_estimators": 100})
+optimized_config = grid_optimizer.optimize_model(base_config, X_train, y_train)
+```
+
+---
+
+### **5. 👀 Observer Pattern (For Training Monitoring)**
+
+Monitor training progress with multiple observers.
+
+```python
+from typing import Protocol
+import time
+from pathlib import Path
+import json
+
+class TrainingObserver(Protocol):
+    """Protocol for training observers."""
+  
+    def on_training_start(self, info: dict[str, Any]) -> None: ...
+    def on_epoch_complete(self, epoch: int, metrics: dict[str, float]) -> None: ...
+    def on_training_complete(self, final_metrics: dict[str, float]) -> None: ...
+
+class ConsoleLogger:
+    """Log training progress to console."""
+  
+    def on_training_start(self, info: dict[str, Any]) -> None:
+        print(f"🚀 Training {info['model_type']} on {info['samples']:,} samples")
+  
+    def on_epoch_complete(self, epoch: int, metrics: dict[str, float]) -> None:
+        metrics_str = " | ".join(f"{k}={v:.4f}" for k, v in metrics.items())
+        print(f"Epoch {epoch:3d}: {metrics_str}")
+  
+    def on_training_complete(self, final_metrics: dict[str, float]) -> None:
+        print("✅ Training complete!")
+        for metric, value in final_metrics.items():
+            print(f"  Final {metric}: {value:.4f}")
+
+class FileLogger:
+    """Log training progress to JSON file."""
+  
+    def __init__(self, log_file: Path):
+        self.log_file = log_file
+        self.log_data: list[dict[str, Any]] = []
+  
+    def on_training_start(self, info: dict[str, Any]) -> None:
+        self.log_data = [{
+            "event": "start",
+            "timestamp": time.time(),
+            "info": info
+        }]
+  
+    def on_epoch_complete(self, epoch: int, metrics: dict[str, float]) -> None:
+        self.log_data.append({
+            "event": "epoch",
+            "timestamp": time.time(),
+            "epoch": epoch,
+            "metrics": metrics
+        })
+        self._save_log()
+  
+    def on_training_complete(self, final_metrics: dict[str, float]) -> None:
+        self.log_data.append({
+            "event": "complete",
+            "timestamp": time.time(),
+            "metrics": final_metrics
+        })
+        self._save_log()
+  
+    def _save_log(self) -> None:
+        """Save log data to file."""
+        with open(self.log_file, 'w') as f:
+            json.dump(self.log_data, f, indent=2)
+
+class EarlyStopping:
+    """Early stopping observer."""
+  
+    def __init__(self, patience: int = 10, metric: str = "val_loss"):
+        self.patience = patience
+        self.metric = metric
+        self.best_value: float | None = None
+        self.wait = 0
+        self.should_stop = False
+  
+    def on_training_start(self, info: dict[str, Any]) -> None:
+        self.best_value = None
+        self.wait = 0
+        self.should_stop = False
+  
+    def on_epoch_complete(self, epoch: int, metrics: dict[str, float]) -> None:
+        current_value = metrics.get(self.metric)
+        if current_value is None:
+            return
+      
+        if self.best_value is None or current_value < self.best_value:
+            self.best_value = current_value
+            self.wait = 0
+        else:
+            self.wait += 1
+            if self.wait >= self.patience:
+                self.should_stop = True
+                print(f"🛑 Early stopping at epoch {epoch}")
+  
+    def on_training_complete(self, final_metrics: dict[str, float]) -> None:
+        pass
+
+class ModelTrainer:
+    """Model trainer with observer support."""
+  
+    def __init__(self):
+        self.observers: list[TrainingObserver] = []
+  
+    def add_observer(self, observer: TrainingObserver) -> None:
+        """Add training observer."""
+        self.observers.append(observer)
+  
+    def train_model(
+        self, 
+        model: Any, 
+        X_train: np.ndarray, 
+        y_train: np.ndarray,
+        X_val: np.ndarray | None = None,
+        y_val: np.ndarray | None = None
+    ) -> Any:
+        """Train model with observer notifications."""
+      
+        # Notify start
+        info = {
+            "model_type": type(model).__name__,
+            "samples": len(X_train),
+            "features": X_train.shape[1]
+        }
+        for observer in self.observers:
+            observer.on_training_start(info)
+      
+        # For sklearn models, just fit once
+        if hasattr(model, 'fit') and not hasattr(model, 'partial_fit'):
+            trained_model = model.fit(X_train, y_train)
+          
+            # Calculate final metrics
+            if X_val is not None and y_val is not None:
+                predictions = trained_model.predict(X_val)
+                from sklearn.metrics import accuracy_score
+                final_metrics = {"accuracy": accuracy_score(y_val, predictions)}
+            else:
+                final_metrics = {"status": "completed"}
+          
+            # Notify completion
+            for observer in self.observers:
+                observer.on_training_complete(final_metrics)
+          
+            return trained_model
+      
+        # For models with epochs (this would be real training loop)
+        return model
+
+# Usage - Add multiple observers
+trainer = ModelTrainer()
+trainer.add_observer(ConsoleLogger())
+trainer.add_observer(FileLogger(Path("training_log.json")))
+early_stopping = EarlyStopping(patience=5)
+trainer.add_observer(early_stopping)
+
+# Train with monitoring
+model_config = ModelConfig("random_forest", {"n_estimators": 100})
+model = ModelFactory.create_model(model_config)
+trained_model = trainer.train_model(model, X_train, y_train, X_val, y_val)
+```
+
+---
+
+### **6. 🔄 Model Caching (For Performance)**
+
+Cache expensive model operations.
+
+```python
+from functools import lru_cache
+import joblib
+import hashlib
+from pathlib import Path
+
+class ModelCache:
+    """Cache for trained models and predictions."""
+  
+    def __init__(self, cache_dir: Path = Path("model_cache")):
+        self.cache_dir = cache_dir
+        self.cache_dir.mkdir(exist_ok=True)
+  
+    def _hash_data(self, data: Any) -> str:
+        """Create hash of data for cache key."""
+        if hasattr(data, 'tobytes'):
+            return hashlib.md5(data.tobytes()).hexdigest()
+        return hashlib.md5(str(data).encode()).hexdigest()
+  
+    def get_model_path(self, config: ModelConfig, data_hash: str) -> Path:
+        """Get cache path for model."""
+        model_hash = hashlib.md5(str(config).encode()).hexdigest()
+        return self.cache_dir / f"model_{model_hash}_{data_hash}.pkl"
+  
+    def save_model(self, model: Any, config: ModelConfig, data_hash: str) -> None:
+        """Save trained model to cache."""
+        path = self.get_model_path(config, data_hash)
+        joblib.dump(model, path)
+  
+    def load_model(self, config: ModelConfig, data_hash: str) -> Any | None:
+        """Load model from cache if exists."""
+        path = self.get_model_path(config, data_hash)
+        if path.exists():
+            return joblib.load(path)
+        return None
+
+class CachedModelTrainer:
+    """Model trainer with caching support."""
+  
+    def __init__(self, cache: ModelCache | None = None):
+        self.cache = cache or ModelCache()
+        self.prediction_cache: dict[str, np.ndarray] = {}
+  
+    def train_with_cache(
+        self, 
+        config: ModelConfig, 
+        X_train: np.ndarray, 
+        y_train: np.ndarray
+    ) -> Any:
+        """Train model with caching."""
+        # Create hash of training data
+        data_hash = self.cache._hash_data((X_train, y_train))
+      
+        # Try to load from cache
+        cached_model = self.cache.load_model(config, data_hash)
+        if cached_model is not None:
+            print("🎯 Loaded model from cache")
+            return cached_model
+      
+        # Train new model
+        print("🔥 Training new model")
+        model = ModelFactory.create_model(config)
+        trained_model = model.fit(X_train, y_train)
+      
+        # Save to cache
+        self.cache.save_model(trained_model, config, data_hash)
+      
+        return trained_model
+  
+    @lru_cache(maxsize=100)
+    def predict_with_cache(self, model_hash: str, data_hash: str) -> np.ndarray:
+        """Predict with in-memory caching (for small datasets)."""
+        # This would contain actual prediction logic
+        # For now, just a placeholder
+        pass
+
+# Usage - Automatic caching
+cache = ModelCache(Path("my_model_cache"))
+trainer = CachedModelTrainer(cache)
+
+config = ModelConfig("random_forest", {"n_estimators": 100})
+
+# First call - trains and caches
+model1 = trainer.train_with_cache(config, X_train, y_train)
+
+# Second call with same data - loads from cache
+model2 = trainer.train_with_cache(config, X_train, y_train)
+```
+
+---
+
+## 📋 **WHEN TO USE EACH PATTERN**
+
+### **✅ Always Use:**
+
+- **Model Factory**: When you have multiple model types
+- **Data Adapter**: When loading from different sources
+
+### **🎯 Use When Complex:**
+
+- **Pipeline Builder**: For multi-step ML workflows
+- **Strategy Pattern**: When switching between algorithms
+- **Observer Pattern**: For training monitoring and logging
+
+### **⚡ Use for Performance:**
+
+- **Model Caching**: For expensive training operations
+
+---
+
+## 🚫 **ANTI-PATTERNS TO AVOID**
+
+```python
+# ❌ DON'T: Over-engineering simple problems
+class UnnecessaryAbstractModelFactoryBuilderStrategy:
+    """68 lines of code to create a simple RandomForest"""
+    pass
+
+# ✅ DO: Keep it simple
+model = RandomForestClassifier(n_estimators=100)
+
+# ❌ DON'T: God classes that do everything
+class MLGodClass:
+    def load_data(self): pass
+    def clean_data(self): pass
+    def train_model(self): pass
+    def deploy_model(self): pass
+    # ... 50 more methods
+
+# ✅ DO: Single responsibility
+class DataLoader: pass
+class ModelTrainer: pass
+class ModelDeployer: pass
+
+# ❌ DON'T: Hardcode everything
+class BadModelFactory:
+    def create_model(self, model_type):
+        if model_type == "rf":
+            return RandomForestClassifier(n_estimators=100)  # Hardcoded!
+
+# ✅ DO: Make it configurable
+class GoodModelFactory:
+    def create_model(self, config: ModelConfig):
+        return RandomForestClassifier(**config.params)
+```
+
+---
+
+## 🎯 **PATTERN SELECTION FLOWCHART**
+
+```
+Need multiple model types? 
+├─ YES → Use Model Factory
+└─ NO → Direct instantiation
+
+Complex multi-step pipeline?
+├─ YES → Use Pipeline Builder  
+└─ NO → Simple sklearn Pipeline
+
+Multiple data sources?
+├─ YES → Use Data Adapter
+└─ NO → Direct data loading
+
+Need to swap algorithms?
+├─ YES → Use Strategy Pattern
+└─ NO → Direct implementation
+
+Need training monitoring?
+├─ YES → Use Observer Pattern
+└─ NO → Simple logging
+
+Expensive operations to cache?
+├─ YES → Use Model Caching
+└─ NO → Run operations directly
+```
+
+---
+
+## 💡 **REMEMBER**
+
+> **"The best pattern is the one that solves your problem simply and clearly."**
+
+**Pattern Guidelines:**
+
+- **Start simple** - Don't use patterns until you need them
+- **Solve real problems** - Not theoretical "what if" scenarios
+- **Keep it readable** - Code should be easy to understand
+- **Test thoroughly** - Patterns add complexity, test well
+- **Document usage** - Show how to use your patterns
+
+**The goal isn't to show off design patterns - it's to build reliable ML systems that work!** 🚀

@@ -1,0 +1,98 @@
+# ========================================
+# A.R.C.A LLM - Docker Compose
+# ========================================
+# Orquestación completa del sistema
+# ========================================
+
+version: '3.8'
+
+services:
+  # ==========================================
+  # A.R.C.A - Voice Assistant Service
+  # ==========================================
+  arca-llm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: arca-llm
+    restart: unless-stopped
+    
+    ports:
+      - "8000:8000"  # API Web
+    
+    volumes:
+      # Persistir modelos descargados
+      - ./models:/app/models
+      # Logs
+      - ./logs:/app/logs
+      # Código fuente (para desarrollo - comentar en producción)
+      - ./src:/app/src
+      - ./run_arca.py:/app/run_arca.py
+    
+    environment:
+      # === LM Studio Configuration ===
+      # Usar host.docker.internal para conectar al LM Studio del host
+      LM_STUDIO_URL: "http://host.docker.internal:1234/v1"
+      LM_STUDIO_MODEL: "qwen/qwen3-4b-2507"
+      LLM_MAX_TOKENS: "150"
+      LLM_TEMPERATURE: "0.7"
+      
+      # === Whisper STT Configuration ===
+      WHISPER_MODEL: "tiny"  # tiny, base, small, medium, large
+      WHISPER_DEVICE: "cpu"
+      WHISPER_COMPUTE_TYPE: "int8"
+      
+      # === TTS Configuration ===
+      TTS_RATE: "175"
+      TTS_VOLUME: "0.9"
+      TTS_VOICE_INDEX: "0"
+      
+      # === API Configuration ===
+      API_HOST: "0.0.0.0"
+      API_PORT: "8000"
+      
+      # === Logging ===
+      LOG_LEVEL: "INFO"
+      
+      # === Cache directories ===
+      HF_HOME: "/app/models/hf_cache"
+      TRANSFORMERS_CACHE: "/app/models/hf_cache"
+    
+    networks:
+      - arca-network
+    
+    # Límites de recursos (ajustar según tu hardware)
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+        reservations:
+          cpus: '2.0'
+          memory: 4G
+    
+    # Healthcheck
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# ==========================================
+# Networks
+# ==========================================
+networks:
+  arca-network:
+    driver: bridge
+    name: arca-network
+
+# ==========================================
+# Volumes (persistencia de datos)
+# ==========================================
+volumes:
+  models:
+    driver: local
+  logs:
+    driver: local
+

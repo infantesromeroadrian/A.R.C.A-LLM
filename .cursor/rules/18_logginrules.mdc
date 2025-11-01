@@ -1,0 +1,22 @@
+# Cursor AI Rules for AI-Engineer-Path Project
+
+## Python Logging Configuration
+
+### Logger Format - Script and Line Number Tracking
+- **CRITICAL**: Log messages MUST show the script name and line number where they originate.
+- Format example: `conversation_service.py:663`, `basic_handlers.py:57`, `analysis_service.py:82`
+- This is automatically handled by **Rich Console** (used by uvicorn)
+- **DO NOT** modify or remove this functionality
+- File and line numbers are added automatically by Rich - keep this behavior intact
+
+### Logger Configuration
+- Use emoji prefixes for log levels (ℹ️ INFO, ⚠️ WARNING, ❌ ERROR)
+- Logger names follow pattern: `models.{ModelName}`
+- Rich console formatting is handled automatically by uvicorn
+
+---
+
+**Last Updated**: 2025-01-26  
+**Project**: AI-Engineer-Path / 10-LangChain-Course  
+**Purpose**: Ensure all logs include script and line number for debugging
+

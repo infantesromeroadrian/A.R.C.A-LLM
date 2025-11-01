@@ -1,0 +1,717 @@
+---
+alwaysApply: true
+---
+# 🎯 Clean Code Principles - Mandatory for All Development
+
+## Philosophy: Code is Read More Than Written
+
+> "Any fool can write code that a computer can understand. Good programmers write code that humans can understand." — Martin Fowler
+
+---
+
+## 🚨 MANDATORY PRINCIPLES - Apply Always
+
+### 1. BE CONSISTENT
+
+**Rule:** Use the same conventions throughout the entire project.
+
+```python
+# ❌ BAD - Inconsistent naming
+def getUserData(user_id):
+    user_name = fetch_user_name(user_id)
+    UserAge = get_age(user_id)
+    return user_name, UserAge
+
+# ✅ GOOD - Consistent snake_case (PEP 8)
+def get_user_data(user_id: int) -> tuple[str, int]:
+    """Retrieve complete user data."""
+    user_name = get_user_name(user_id)
+    user_age = get_user_age(user_id)
+    return user_name, user_age
+```
+
+**AI Must:**
+- Follow PEP 8 for Python (snake_case functions, PascalCase classes)
+- Use consistent parameter naming across similar functions
+- Apply same patterns throughout the codebase
+
+---
+
+### 2. MEANINGFUL NAMES OVER COMMENTS
+
+**Rule:** Code should be self-explanatory. Names reveal intent.
+
+```python
+# ❌ BAD - Cryptic names requiring comments
+def calc(d: int) -> float:
+    # d is days, calculate price with 10% discount
+    p = d * 50  # p is base price
+    disc = p * 0.1  # discount
+    return p - disc
+
+# ✅ GOOD - Self-documenting code
+DAILY_RENTAL_PRICE = 50
+DISCOUNT_RATE = 0.10
+
+def calculate_rental_price_with_discount(rental_days: int) -> float:
+    """Calculate total rental price with standard discount applied."""
+    base_price = rental_days * DAILY_RENTAL_PRICE
+    discount_amount = base_price * DISCOUNT_RATE
+    final_price = base_price - discount_amount
+    return final_price
+```
+
+**AI Must:**
+- Use descriptive variable names that explain their purpose
+- Avoid single-letter variables (except i, j, k in short loops)
+- Use domain-specific terminology
+- Name constants in SCREAMING_SNAKE_CASE
+
+---
+
+### 3. INDENTATION AND CODE STYLE
+
+**Rule:** Follow PEP 8 strictly. Consistent formatting always.
+
+```python
+# ❌ BAD - Inconsistent indentation and style
+def process_data(data):
+  if data:
+      for item in data:
+        if item>0:
+            result=item*2
+            print(result)
+        else:print("Invalid")
+  return True
+
+# ✅ GOOD - PEP 8 compliant
+def process_data(data: list[int]) -> bool:
+    """Process numerical data and print doubled positive values."""
+    if not data:
+        return False
+    
+    for item in data:
+        if item > 0:
+            result = item * 2
+            print(result)
+        else:
+            print("Invalid: Value must be positive")
+    
+    return True
+```
+
+**AI Must:**
+- 4 spaces per indentation level
+- Spaces around operators (=, >, *, etc.)
+- Max 88 characters per line (Black formatter standard)
+- Blank lines: 2 between top-level definitions, 1 between methods
+
+---
+
+### 4. KEEP METHODS/CLASSES/FILES SMALL
+
+**Rule:** Functions ≤ 20 lines, Classes ≤ 200 lines, Files ≤ 500 lines.
+
+```python
+# ❌ BAD - God function doing everything
+def process_order(order_data):
+    # Validation (50 lines)
+    # Calculation (40 lines)
+    # Payment processing (60 lines)
+    # Inventory update (30 lines)
+    # Email sending (20 lines)
+    return result  # 200+ lines total!
+
+# ✅ GOOD - Small, focused functions
+def process_order(order_data: dict) -> dict:
+    """Main orchestrator for order processing."""
+    if not validate_order(order_data):
+        return {"error": "Invalid order"}
+    
+    total = calculate_order_total(order_data['items'])
+    payment_success = process_payment(order_data['payment_method'], total)
+    
+    if payment_success:
+        update_inventory(order_data['items'])
+        send_confirmation_email(order_data['customer_email'], total)
+        return {"success": True, "total": total}
+    
+    return {"error": "Payment failed"}
+
+def validate_order(order_data: dict) -> bool:
+    """Validate order structure and required fields."""
+    return order_data and 'items' in order_data
+
+def calculate_order_total(items: list) -> float:
+    """Calculate total from order items."""
+    return sum(item['price'] * item['quantity'] for item in items)
+```
+
+**AI Must:**
+- Extract functions when logic exceeds 20 lines
+- Single Responsibility Principle: one function, one purpose
+- Split large classes into smaller, focused classes
+
+---
+
+### 5. PURE FUNCTIONS
+
+**Rule:** Functions should be deterministic with no side effects.
+
+```python
+# ❌ BAD - Impure function with side effects
+total_discount = 0  # Global state
+
+def calculate_price(base_price: float) -> float:
+    global total_discount
+    discount = base_price * 0.1
+    total_discount += discount  # ❌ Modifies global state
+    return base_price - discount
+
+# ✅ GOOD - Pure function
+def calculate_price_with_discount(
+    base_price: float,
+    discount_rate: float = 0.1
+) -> float:
+    """Calculate final price after discount - PURE."""
+    discount_amount = base_price * discount_rate
+    return base_price - discount_amount
+
+# If you need to accumulate, do it explicitly outside
+prices = [100, 200, 150]
+discounted_prices = [calculate_price_with_discount(p) for p in prices]
+total_saved = sum(p * 0.1 for p in prices)
+```
+
+**AI Must:**
+- Avoid modifying global state
+- Return new values instead of modifying input parameters
+- Make functions testable and predictable
+
+---
+
+### 6. MINIMIZE CYCLOMATIC COMPLEXITY
+
+**Rule:** Keep complexity < 10 per function. Reduce nested ifs.
+
+```python
+# ❌ BAD - High cyclomatic complexity (CC = 12)
+def calculate_shipping(weight, distance, is_express, is_international, customer_type):
+    cost = 0
+    if weight < 1:
+        if is_express:
+            if is_international:
+                cost = 15
+            else:
+                cost = 10
+        else:
+            if is_international:
+                cost = 8
+            else:
+                cost = 5
+    # ... more nested ifs
+    return cost
+
+# ✅ GOOD - Low complexity with lookup table
+SHIPPING_RATES = {
+    ('light', 'standard', 'domestic'): 5,
+    ('light', 'standard', 'international'): 8,
+    ('light', 'express', 'domestic'): 10,
+    ('light', 'express', 'international'): 15,
+    ('medium', 'standard', 'domestic'): 10,
+    ('medium', 'express', 'international'): 30,
+}
+
+CUSTOMER_DISCOUNTS = {
+    'regular': 1.0,
+    'premium': 0.9,
+    'vip': 0.8,
+}
+
+def calculate_shipping(
+    weight: float,
+    is_express: bool,
+    is_international: bool,
+    customer_type: str
+) -> float:
+    """Calculate shipping cost with low complexity."""
+    weight_category = 'light' if weight < 1 else 'medium'
+    speed = 'express' if is_express else 'standard'
+    location = 'international' if is_international else 'domestic'
+    
+    base_rate = SHIPPING_RATES.get((weight_category, speed, location), 0)
+    discount = CUSTOMER_DISCOUNTS.get(customer_type, 1.0)
+    
+    return base_rate * discount
+```
+
+**AI Must:**
+- Use lookup tables/dicts instead of nested if/elif
+- Extract complex conditions into named boolean variables
+- Use early returns to reduce nesting
+
+---
+
+### 7. AVOID PASSING NULLS AND BOOLEANS
+
+**Rule:** Use explicit types, exceptions, and enums instead.
+
+```python
+# ❌ BAD - None and boolean flags
+def get_user_email(user_id: int):
+    user = database.get_user(user_id)
+    if user:
+        return user.email
+    return None  # ❌ Caller must check for None
+
+def send_notification(user, is_urgent, include_sms):
+    """❌ What do True/False mean?"""
+    if is_urgent:
+        send_email_urgent(user)
+        if include_sms:
+            send_sms_urgent(user)
+
+# ✅ GOOD - Explicit types and enums
+from enum import Enum
+from dataclasses import dataclass
+
+class NotificationPriority(Enum):
+    NORMAL = "normal"
+    URGENT = "urgent"
+
+class NotificationChannel(Enum):
+    EMAIL_ONLY = "email_only"
+    EMAIL_AND_SMS = "email_and_sms"
+
+class UserNotFoundError(Exception):
+    """User doesn't exist."""
+    pass
+
+def get_user_email(user_id: int) -> str:
+    """Get user email - never returns None."""
+    user = database.get_user(user_id)
+    if not user:
+        raise UserNotFoundError(f"User {user_id} not found")
+    return user.email
+
+def send_notification(
+    user: User,
+    priority: NotificationPriority = NotificationPriority.NORMAL,
+    channel: NotificationChannel = NotificationChannel.EMAIL_ONLY
+) -> None:
+    """Send notification with explicit parameters."""
+    if priority == NotificationPriority.URGENT:
+        send_urgent_email(user)
+        if channel == NotificationChannel.EMAIL_AND_SMS:
+            send_urgent_sms(user)
+    else:
+        send_normal_email(user)
+```
+
+**AI Must:**
+- Use exceptions for exceptional cases
+- Use enums for discrete options
+- Use dataclasses for multiple parameters
+- Never return None if a value is expected
+
+---
+
+### 8. KEEP FRAMEWORK CODE DISTANT
+
+**Rule:** Business logic should not depend on frameworks.
+
+```python
+# ❌ BAD - Business logic mixed with Flask
+from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
+@app.route('/users/<int:user_id>/orders')
+def get_user_orders(user_id):
+    # ❌ Business logic directly in endpoint
+    user = User.query.filter_by(id=user_id).first()
+    orders = Order.query.filter_by(user_id=user_id).all()
+    total = sum(order.amount for order in orders)
+    
+    if len(orders) > 10:
+        total *= 0.9  # Discount logic mixed with routing
+    
+    return jsonify({"total": total})
+
+# ✅ GOOD - Clean architecture with separated layers
+# Domain Layer (No framework dependencies)
+@dataclass
+class OrderSummary:
+    user_name: str
+    orders: list[Order]
+    total_amount: float
+
+# Application Layer (Business logic)
+class OrderService:
+    """Framework-agnostic business logic."""
+    
+    def __init__(self, order_repository, user_repository):
+        self.order_repo = order_repository
+        self.user_repo = user_repository
+    
+    def get_user_order_summary(self, user_id: int) -> OrderSummary:
+        """Get order summary with business rules applied."""
+        user = self.user_repo.find_by_id(user_id)
+        if not user:
+            raise UserNotFoundError(f"User {user_id} not found")
+        
+        orders = self.order_repo.find_by_user_id(user_id)
+        total = sum(order.amount for order in orders)
+        
+        # Business rule: loyalty discount
+        if len(orders) > 10:
+            total *= 0.9
+        
+        return OrderSummary(user.name, orders, total)
+
+# Presentation Layer (Flask specific)
+@app.route('/users/<int:user_id>/orders')
+def get_user_orders_endpoint(user_id: int):
+    """Flask endpoint - only handles HTTP."""
+    try:
+        order_service = OrderService(OrderRepository(), UserRepository())
+        summary = order_service.get_user_order_summary(user_id)
+        return jsonify({"total": summary.total_amount}), 200
+    except UserNotFoundError:
+        return jsonify({"error": "User not found"}), 404
+```
+
+**AI Must:**
+- Separate business logic from framework code
+- Use dependency injection
+- Create repository/service layers
+- Make business logic testable without framework
+
+---
+
+### 9. USE CORRECT CONSTRUCTS
+
+**Rule:** Use appropriate Python data structures and idioms.
+
+```python
+# ❌ BAD - Wrong constructs
+def get_unique_tags(articles):
+    unique = []
+    for article in articles:
+        for tag in article.tags:
+            if tag not in unique:  # O(n) lookup in list
+                unique.append(tag)
+    return unique
+
+# Concatenating strings in loop
+html = ""
+for item in items:
+    html += f"<li>{item}</li>"  # Creates new string each time
+
+# ✅ GOOD - Correct constructs
+def get_unique_tags(articles: list[Article]) -> set[str]:
+    """Get all unique tags - O(1) lookup with set."""
+    return {
+        tag
+        for article in articles
+        for tag in article.tags
+    }
+
+# Efficient string joining
+html = "".join(f"<li>{item}</li>" for item in items)
+
+# Use dict for lookups instead of if/elif chain
+status_messages = {
+    'pending': 'Order is being processed',
+    'shipped': 'Order is on the way',
+    'delivered': 'Order has been delivered',
+}
+message = status_messages.get(order.status, 'Unknown status')
+
+# Use Counter for counting
+from collections import Counter
+tags = [tag for article in articles for tag in article.tags]
+tag_counts = Counter(tags)
+most_common = tag_counts.most_common(5)
+```
+
+**AI Must:**
+- Use `set` for unique collections
+- Use `dict` for key-value lookups
+- Use list/dict comprehensions over loops with append
+- Use `str.join()` instead of += in loops
+- Use `Counter` for counting occurrences
+
+---
+
+### 10. TESTS SHOULD BE FAST AND INDEPENDENT
+
+**Rule:** Unit tests in milliseconds, no shared state.
+
+```python
+# ❌ BAD - Slow, dependent tests
+test_database = []  # Shared state
+
+class TestUserService:
+    def test_create_user(self):
+        # ❌ Modifies global state
+        user = create_user("John")
+        test_database.append(user)
+        assert user.name == "John"
+        time.sleep(1)  # ❌ Slow
+    
+    def test_find_user(self):
+        # ❌ Depends on test_create_user running first
+        user = test_database[0]
+        assert user.name == "John"
+
+# ✅ GOOD - Fast, independent tests
+import pytest
+from unittest.mock import Mock
+
+class TestUserService:
+    
+    @pytest.fixture
+    def mock_repository(self):
+        """Fresh mock for each test."""
+        return Mock(spec=UserRepository)
+    
+    @pytest.fixture
+    def service(self, mock_repository):
+        """Fresh service for each test."""
+        return UserService(repository=mock_repository)
+    
+    def test_create_user_with_valid_data(self, service, mock_repository):
+        """✅ Fast, no dependencies, isolated."""
+        # Arrange
+        mock_repository.save.return_value = User(id=1, name="John")
+        
+        # Act
+        user = service.create_user("John", "john@test.com")
+        
+        # Assert
+        assert user.name == "John"
+        mock_repository.save.assert_called_once()
+    
+    def test_create_user_with_invalid_email(self, service):
+        """✅ Independent test for error case."""
+        with pytest.raises(ValueError, match="Invalid email"):
+            service.create_user("John", "invalid-email")
+```
+
+**AI Must:**
+- Use mocks instead of real databases/APIs
+- Use pytest fixtures for test setup
+- Each test must be independent
+- Tests should run in < 100ms each
+- Use `@pytest.mark.slow` for integration tests
+
+---
+
+### 11. ORGANIZE CODE BY ACTOR
+
+**Rule:** Organize by feature/domain, not by technical layer.
+
+```python
+# ❌ BAD - Organized by technical type
+project/
+├── models/
+│   ├── user.py
+│   ├── order.py
+│   └── payment.py
+├── views/
+│   ├── user_view.py
+│   ├── order_view.py
+│   └── payment_view.py
+└── controllers/
+    ├── user_controller.py
+    ├── order_controller.py
+    └── payment_controller.py
+
+# ✅ GOOD - Organized by feature/actor
+project/
+├── users/
+│   ├── domain/
+│   │   └── user.py
+│   ├── application/
+│   │   └── user_service.py
+│   └── api/
+│       └── user_routes.py
+├── orders/
+│   ├── domain/
+│   │   └── order.py
+│   ├── application/
+│   │   └── order_service.py
+│   └── api/
+│       └── order_routes.py
+└── payments/
+    ├── domain/
+    │   └── payment.py
+    ├── application/
+    │   └── payment_service.py
+    └── api/
+        └── payment_routes.py
+```
+
+**AI Must:**
+- Group related functionality together
+- Organize by feature/domain/actor
+- Each feature module contains its own domain, application, and infrastructure
+- Makes it easy to find all code related to a feature
+
+---
+
+### 12. COMMAND QUERY SEPARATION (CQS)
+
+**Rule:** Functions either modify state OR return data, never both.
+
+```python
+# ❌ BAD - Violates CQS
+class ShoppingCart:
+    def add_item(self, item: Product) -> int:
+        """❌ Modifies AND returns - violates CQS."""
+        self.items.append(item)
+        return len(self.items)  # Returning count as side effect
+
+# ✅ GOOD - Follows CQS
+class ShoppingCart:
+    # COMMANDS - Modify state, return nothing
+    def add_item(self, item: Product) -> None:
+        """Command: Add item to cart."""
+        self.items.append(item)
+    
+    def remove_item(self, item_id: int) -> None:
+        """Command: Remove item from cart."""
+        self.items = [item for item in self.items if item.id != item_id]
+    
+    def clear(self) -> None:
+        """Command: Clear all items."""
+        self.items.clear()
+    
+    # QUERIES - Return data, don't modify
+    def get_item_count(self) -> int:
+        """Query: Get total number of items."""
+        return len(self.items)
+    
+    def get_total_price(self) -> float:
+        """Query: Calculate total cart price."""
+        return sum(item.price for item in self.items)
+    
+    def contains_item(self, item_id: int) -> bool:
+        """Query: Check if item exists in cart."""
+        return any(item.id == item_id for item in self.items)
+
+# Usage is clear
+cart.add_item(product)  # Command - modifies
+count = cart.get_item_count()  # Query - reads
+```
+
+**AI Must:**
+- Commands return None
+- Queries return data but don't modify state
+- Separate modification from retrieval
+- Exception: Idiomatic data structures (stack.pop() is acceptable)
+
+---
+
+### 13. KEEP IT SIMPLE AND REFACTOR OFTEN
+
+**Rule:** Start simple. Add complexity only when needed.
+
+```python
+# ❌ BAD - Over-engineering from the start
+class AbstractDiscountStrategyFactory:
+    """❌ Too much abstraction for simple problem."""
+    @abstractmethod
+    def create_discount_strategy(self): ...
+
+class PercentageDiscountStrategy(DiscountStrategy):
+    def calculate(self, amount): ...
+
+class FixedDiscountStrategy(DiscountStrategy):
+    def calculate(self, amount): ...
+
+# ✅ GOOD - Start simple
+def calculate_final_price(base_price: float, discount_rate: float = 0) -> float:
+    """Calculate price after discount - simple and clear."""
+    discount = base_price * discount_rate
+    return base_price - discount
+
+# Usage
+final_price = calculate_final_price(100, 0.1)
+
+# ✅ GOOD - Refactor when complexity grows
+@dataclass(frozen=True)
+class Discount:
+    type: Literal["percentage", "fixed", "none"]
+    value: float
+
+def calculate_final_price(base_price: float, discount: Discount) -> float:
+    """Calculate price after discount - handles multiple discount types."""
+    match discount.type:
+        case "percentage":
+            discount_amount = base_price * discount.value
+        case "fixed":
+            discount_amount = discount.value
+        case _:
+            discount_amount = 0
+    
+    return max(0, base_price - discount_amount)
+```
+
+**AI Must:**
+- Start with simplest solution that works
+- Refactor when you need to add second use case
+- Don't predict future requirements
+- YAGNI (You Aren't Gonna Need It)
+
+---
+
+## 📋 QUICK QUALITY CHECKLIST
+
+**Before every commit, AI must verify:**
+
+- [ ] Names are descriptive and domain-specific
+- [ ] Functions ≤ 20 lines with single responsibility
+- [ ] Complete type hints on all functions
+- [ ] No magic numbers (use named constants)
+- [ ] No code duplication
+- [ ] Cyclomatic complexity < 10
+- [ ] No bare `except` clauses
+- [ ] Tests for critical logic
+- [ ] PEP 8 compliant
+- [ ] Documentation on public APIs
+
+---
+
+## 🚫 ANTI-PATTERNS TO AUTO-REJECT
+
+**AI must refuse to generate:**
+
+1. **Functions > 50 lines** - Break it down
+2. **Classes > 300 lines** - Split into modules
+3. **Cyclomatic complexity > 15** - Simplify logic
+4. **No type hints** - Add them
+5. **Bare `except:`** - Use specific exceptions
+6. **Global mutable state** - Use parameters
+7. **Hardcoded values** - Use configuration
+8. **Mixed concerns** - Separate layers
+
+---
+
+## 🎯 REMEMBER
+
+> "Programs must be written for people to read, and only incidentally for machines to execute." — Harold Abelson
+
+**These principles are not suggestions - they are requirements.**
+
+Every piece of code generated must follow these principles. No exceptions.
+
+**Quality is not negotiable.**
+
+---
+
+**Version:** 1.0  
+**Last Updated:** October 2025  
+**Status:** MANDATORY - Always Applied  
+**Priority:** CRITICAL

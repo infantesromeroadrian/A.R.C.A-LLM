@@ -1,0 +1,439 @@
+---
+alwaysApply: true
+---
+## 🤖 **AI/ML SPECIFIC QUALITY GATES**
+
+### **🔍 Data Pipeline Checks:**
+
+```python
+# ✅ GOOD - Proper ML pipeline
+def train_model(data_path: Path, config: TrainingConfig) -> TrainingResult:
+    """Train model with proper data handling."""
+    
+    # 1. Load and split BEFORE any processing
+    raw_data = pd.read_csv(data_path)
+    train_data, test_data = train_test_split(raw_data, random_state=42)
+    
+    # 2. Fit preprocessors ONLY on training data
+    preprocessor = StandardScaler()
+    X_train = preprocessor.fit_transform(train_data.features)  # ✅ Fit on train
+    X_test = preprocessor.transform(test_data.features)        # ✅ Only transform test
+    
+    # 3. Train model
+    model = RandomForestClassifier(**config.params)
+    model.fit(X_train, train_data.targets)
+    
+    return TrainingResult(model=model, preprocessor=preprocessor)
+
+# ❌ BAD - Data leakage
+def bad_train_model(data_path: Path):
+    raw_data = pd.read_csv(data_path)
+    
+    # 🚨 DATA LEAKAGE: Fitting on all data before split!
+    preprocessor = StandardScaler()
+    processed_data = preprocessor.fit_transform(raw_data.features)
+    
+    train_data, test_data = train_test_split(processed_data)  # Too late!
+```
+
+**Quick ML Checks:**
+- [ ] **No data leakage**: Fit preprocessors only on training data
+- [ ] **Random seeds set**: For reproducible results
+- [ ] **Proper splits**: Stratified for classification, time-based for time series
+- [ ] **Metrics logged**: Track performance for comparison
+
+---
+
+### **🧠 LLM Integration Checks:**
+
+```python
+# ✅ GOOD - Secure LLM integration
+import openai
+from typing import Literal
+
+class SecureLLMService:
+    """LLM service with proper error handling and validation."""
+    
+    def __init__(self, api_key: str):
+        self.client = openai.AsyncOpenAI(api_key=api_key)
+        self.max_tokens = 4000  # Prevent excessive costs
+    
+    async def generate_response(
+        self, 
+        user_input: str, 
+        system_prompt: str = "",
+        temperature: float = 0.1
+    ) -> str:
+        """Generate LLM response with proper validation."""
+        
+        # Input validation
+        if not user_input.strip():
+            raise ValueError("User input cannot be empty")
+        
+        if len(user_input) > 10000:
+            raise ValueError("Input too long, possible attack")
+        
+        # Sanitize dangerous patterns
+        dangerous_patterns = ['<script>', 'javascript:', 'eval(']
+        if any(pattern in user_input.lower() for pattern in dangerous_patterns):
+            raise ValueError("Potentially dangerous input detected")
+        
+        try:
+            response = await self.client.chat.completions.create(
+                model="gpt-4",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_input}
+                ],
+                temperature=temperature,
+                max_tokens=self.max_tokens
+            )
+            
+            return response.choices[0].message.content
+            
+        except openai.RateLimitError:
+            raise RuntimeError("API rate limit exceeded, try again later")
+        except openai.APIError as e:
+            raise RuntimeError(f"API error: {str(e)}")
+
+# ❌ BAD - Insecure LLM usage
+async def bad_llm_service(user_input):
+    # No input validation - injection risk!
+    # No error handling - crashes on API errors!
+    # No rate limiting - expensive failures!
+    response = await openai.chat.completions.create(
+        model="gpt-4",
+        messages=[{"role": "user", "content": user_input}]  # Direct injection!
+    )
+    return response.choices[0].message.content
+```
+
+**Quick LLM Checks:**
+- [ ] **Input validation**: Sanitize user input, check length limits
+- [ ] **Error handling**: API errors, rate limits, timeouts
+- [ ] **Cost control**: Max tokens, reasonable temperature
+- [ ] **No prompt injection**: Validate and sanitize inputs
+
+---
+
+## 🔒 **Security & Performance Essentials**
+
+### **Security Quick Wins:**
+
+```python
+# ✅ GOOD - Secure configuration
+import os
+from pydantic_settings import BaseSettings
+
+class Settings(BaseSettings):
+    """Secure settings with validation."""
+    
+    database_url: str
+    api_key: str  
+    max_file_size: int = 10_000_000  # 10MB limit
+    allowed_file_types: list[str] = [".csv", ".json", ".txt"]
+    
+    class Config:
+        env_file = ".env"  # Never commit this file!
+
+settings = Settings()
+
+# ✅ GOOD - Secure file handling
+def process_uploaded_file(file_path: Path) -> pd.DataFrame:
+    """Process uploaded file with security checks."""
+    
+    # Security checks
+    if file_path.suffix not in settings.allowed_file_types:
+        raise ValueError(f"File type {file_path.suffix} not allowed")
+    
+    if file_path.stat().st_size > settings.max_file_size:
+        raise ValueError("File too large")
+    
+    # Prevent path traversal
+    if ".." in str(file_path) or str(file_path).startswith("/"):
+        raise ValueError("Invalid file path")
+    
+    return pd.read_csv(file_path)
+
+# ❌ BAD - Security vulnerabilities  
+API_KEY = "sk-1234567890"  # 🚨 Hardcoded secret!
+
+def bad_file_process(filename):
+    # 🚨 Path traversal vulnerability!
+    full_path = f"/uploads/{filename}"  
+    return pd.read_csv(full_path)  # No validation!
+```
+
+**Security Checklist:**
+- [ ] **No hardcoded secrets**: Use environment variables
+- [ ] **Input validation**: File types, sizes, paths
+- [ ] **SQL injection protection**: Parameterized queries
+- [ ] **Path traversal prevention**: Validate file paths
+
+---
+
+### **Performance Quick Wins:**
+
+```python
+# ✅ GOOD - Efficient data processing
+from typing import Iterator
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+class EfficientDataProcessor:
+    """Process data efficiently for large datasets."""
+    
+    def __init__(self, max_workers: int = 4):
+        self.executor = ThreadPoolExecutor(max_workers=max_workers)
+    
+    def process_large_dataset(
+        self, 
+        file_path: Path, 
+        batch_size: int = 10000
+    ) -> Iterator[pd.DataFrame]:
+        """Process large datasets in memory-efficient batches."""
+        
+        for chunk in pd.read_csv(file_path, chunksize=batch_size):
+            # Process chunk
+            processed = self._clean_chunk(chunk)
+            yield processed
+            
+            # Explicit cleanup
+            del chunk, processed
+    
+    async def process_multiple_files(
+        self, 
+        file_paths: list[Path]
+    ) -> list[pd.DataFrame]:
+        """Process multiple files concurrently."""
+        
+        async def process_single_file(path: Path) -> pd.DataFrame:
+            loop = asyncio.get_event_loop()
+            return await loop.run_in_executor(
+                self.executor, 
+                pd.read_csv, 
+                path
+            )
+        
+        tasks = [process_single_file(path) for path in file_paths]
+        return await asyncio.gather(*tasks)
+
+# ❌ BAD - Memory inefficient
+def bad_processor(files):
+    all_data = []
+    for file in files:
+        data = pd.read_csv(file)  # Load entire file
+        all_data.append(data)     # Keep in memory
+    return pd.concat(all_data)    # Memory explosion!
+```
+
+**Performance Checklist:**
+- [ ] **Async for I/O**: File operations, API calls
+- [ ] **Batch processing**: Large datasets in chunks  
+- [ ] **Memory cleanup**: Delete large objects explicitly
+- [ ] **Caching**: Expensive operations (with TTL)
+
+---
+
+## 🧪 **Testing & Documentation Essentials**
+
+### **Testing That Matters:**
+
+```python
+# ✅ GOOD - Practical testing
+import pytest
+from unittest.mock import Mock, patch
+
+class TestMLModel:
+    """Test ML model with practical scenarios."""
+    
+    @pytest.fixture
+    def sample_data(self):
+        """Consistent test data."""
+        return pd.DataFrame({
+            'feature1': [1, 2, 3, 4],
+            'feature2': [0.1, 0.2, 0.3, 0.4],
+            'target': [0, 1, 0, 1]
+        })
+    
+    def test_model_training_basic(self, sample_data):
+        """Test basic model training functionality."""
+        model = RandomForestClassifier(random_state=42)
+        X, y = sample_data[['feature1', 'feature2']], sample_data['target']
+        
+        trained_model = model.fit(X, y)
+        
+        assert hasattr(trained_model, 'predict')
+        assert len(trained_model.predict(X)) == len(X)
+    
+    def test_model_reproducibility(self, sample_data):
+        """Test that results are reproducible."""
+        X, y = sample_data[['feature1', 'feature2']], sample_data['target']
+        
+        model1 = RandomForestClassifier(random_state=42)
+        model2 = RandomForestClassifier(random_state=42)
+        
+        pred1 = model1.fit(X, y).predict(X)
+        pred2 = model2.fit(X, y).predict(X)
+        
+        np.testing.assert_array_equal(pred1, pred2)
+    
+    @pytest.mark.asyncio
+    async def test_llm_service_with_mock(self):
+        """Test LLM service with mocked API."""
+        with patch('openai.AsyncOpenAI') as mock_openai:
+            # Setup mock response
+            mock_client = Mock()
+            mock_openai.return_value = mock_client
+            
+            service = SecureLLMService("fake-key")
+            response = await service.generate_response("Hello")
+            
+            assert mock_client.chat.completions.create.called
+```
+
+**Testing Checklist:**
+- [ ] **Basic functionality**: Core features work
+- [ ] **Edge cases**: Empty data, null values, errors
+- [ ] **ML-specific**: Reproducibility, data leakage prevention
+- [ ] **Mocked externals**: APIs, databases, file systems
+
+---
+
+### **Documentation That Helps:**
+
+```python
+# ✅ GOOD - Helpful documentation
+from typing import Optional, Tuple
+import pandas as pd
+
+def preprocess_financial_data(
+    raw_data: pd.DataFrame,
+    remove_outliers: bool = True,
+    outlier_threshold: float = 3.0,
+    handle_missing: str = "drop"
+) -> Tuple[pd.DataFrame, dict]:
+    """
+    Preprocess financial dataset for machine learning.
+    
+    Handles missing values, outliers, and feature scaling for financial data.
+    Assumes data has 'price', 'volume', 'market_cap' columns.
+    
+    Args:
+        raw_data: Raw financial dataset with required columns
+        remove_outliers: Whether to remove statistical outliers
+        outlier_threshold: Standard deviations for outlier detection
+        handle_missing: How to handle missing values ('drop', 'fill', 'interpolate')
+        
+    Returns:
+        Tuple of (processed_data, preprocessing_stats)
+        
+    Raises:
+        ValueError: If required columns missing or invalid parameters
+        
+    Example:
+        >>> data = pd.DataFrame({'price': [100, 200, 300], 'volume': [1000, 2000, 3000]})
+        >>> processed, stats = preprocess_financial_data(data)
+        >>> print(f"Processed {len(processed)} rows")
+    """
+    if raw_data.empty:
+        raise ValueError("Input data cannot be empty")
+    
+    required_cols = ['price', 'volume']
+    missing_cols = [col for col in required_cols if col not in raw_data.columns]
+    if missing_cols:
+        raise ValueError(f"Missing required columns: {missing_cols}")
+    
+    # Implementation here...
+    return processed_data, stats
+```
+
+**Documentation Checklist:**
+- [ ] **Clear purpose**: What the function does
+- [ ] **Parameters explained**: Types, defaults, constraints  
+- [ ] **Return values**: What you get back
+- [ ] **Example usage**: Copy-pasteable example
+- [ ] **Error conditions**: When it fails and why
+
+---
+
+## 📋 **Task-Specific Quality Gates**
+
+### **🆕 New Feature:**
+- [ ] Requirements clear and testable
+- [ ] Architecture fits existing patterns
+- [ ] Error handling for edge cases
+- [ ] Performance acceptable for expected load
+
+### **🔧 Refactoring:**
+- [ ] Functionality preserved exactly
+- [ ] Code more readable than before
+- [ ] No new bugs introduced
+- [ ] Existing tests still pass
+
+### **🐛 Bug Fix:**
+- [ ] Root cause identified and addressed
+- [ ] Fix is minimal and targeted
+- [ ] Test added to prevent regression
+- [ ] Related code reviewed for similar issues
+
+### **🤖 ML Model:**
+- [ ] No data leakage in pipeline
+- [ ] Performance meets minimum requirements
+- [ ] Model versioning and tracking
+- [ ] Bias and fairness evaluation
+
+---
+
+## 🚨 **Critical Stop Conditions**
+
+**STOP and reconsider if:**
+- [ ] **Creating files instead of editing existing ones**
+- [ ] **Hardcoding secrets, APIs keys, or passwords**
+- [ ] **Writing functions over 20 lines**
+- [ ] **Using `except:` without specific exception types**
+- [ ] **ML pipeline fits preprocessors on test data**
+- [ ] **No input validation for user data or file uploads**
+
+---
+
+## 🎯 **Daily Usage Pattern**
+
+### **Morning (2 min):**
+```markdown
+□ Review task requirements clearly
+□ Check existing code patterns to follow
+□ Plan approach (edit existing vs new files)
+```
+
+### **During Development (ongoing):**
+```markdown  
+□ Type hints on new functions
+□ Descriptive names for variables/functions
+□ Specific error handling, no bare except
+□ Docstrings for public functions
+□ No hardcoded values or secrets
+```
+
+### **Before Commit (90 sec):**
+```markdown
+□ Self-review: would I approve this PR?
+□ ML-specific: no data leakage?
+□ Security: no hardcoded secrets?
+□ Performance: no obvious bottlenecks?
+□ Commit message: descriptive with task ID
+```
+
+---
+
+## 💡 **Remember**
+
+> **"Perfect is the enemy of good, but good is the enemy of broken."**
+
+**This checklist exists to:**
+- **Prevent common mistakes** that cause production issues
+- **Maintain code quality** without slowing development
+- **Catch problems early** when they're easy to fix
+- **Build better habits** through consistent practice
+
+**Use it as a safety net, not a bureaucratic burden. Quality code is faster code in the long run!** 🚀
