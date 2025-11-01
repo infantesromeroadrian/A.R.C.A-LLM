@@ -95,6 +95,15 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=[
+        "X-Session-ID",
+        "X-Transcribed-Text",
+        "X-Response-Text",
+        "X-Latency-Total",
+        "X-Latency-STT",
+        "X-Latency-LLM",
+        "X-Latency-TTS"
+    ],
 )
 
 
