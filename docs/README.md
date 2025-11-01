@@ -33,6 +33,7 @@ Documentación completa del proyecto organizada por categorías.
 
 - **[requirements.md](requirements.md)** - Requisitos detallados del sistema
 - **[../diagrams/architecture/system_overview.md](../diagrams/architecture/system_overview.md)** - Arquitectura del sistema
+- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - 🔌 Documentación de API para integración frontend
 
 ---
 

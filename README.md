@@ -109,6 +109,57 @@ Abrir navegador en: **http://localhost:8000**
 
 ---
 
+## 🔌 API para Integración Frontend
+
+📖 **Documentación completa**: [docs/API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md)
+
+### Endpoint Principal
+
+```http
+POST /api/voice/process
+Content-Type: multipart/form-data
+
+Body:
+- audio: File (audio blob)
+- conversation_id: String (optional)
+
+Response:
+- Body: audio/wav (respuesta en audio)
+- Headers:
+  - X-Conversation-Id (Base64)
+  - X-Transcribed-Text (Base64)
+  - X-Response-Text (Base64)
+```
+
+### Ejemplo de Integración
+
+```javascript
+const formData = new FormData();
+formData.append('audio', audioBlob, 'voice.webm');
+
+const response = await fetch('http://localhost:8000/api/voice/process', {
+  method: 'POST',
+  body: formData
+});
+
+// Decodificar headers
+const conversationId = atob(response.headers.get('X-Conversation-Id'));
+const transcribedText = atob(response.headers.get('X-Transcribed-Text'));
+const llmResponse = atob(response.headers.get('X-Response-Text'));
+
+// Reproducir audio
+const audio = new Audio(URL.createObjectURL(await response.blob()));
+audio.play();
+```
+
+**Otros Endpoints**:
+- `GET /api/health` - Health check
+- `GET /api/voice/conversation/{id}` - Obtener historial
+- `DELETE /api/voice/conversation/{id}` - Eliminar conversación
+- `WS /ws/voice` - WebSocket para streaming real-time
+
+---
+
 ## 📂 Arquitectura
 
 ### Estructura del Proyecto
