@@ -8,7 +8,7 @@ Siguiendo principios DDD:
 """
 
 from dataclasses import dataclass
-from datetime import datetime, UTC
+from datetime import datetime, timezone
 from typing import Literal
 
 
@@ -38,7 +38,7 @@ class Message:
         return cls(
             role="user",
             content=content.strip(),
-            timestamp=datetime.now(UTC)
+            timestamp=datetime.now(timezone.utc)
         )
     
     @classmethod
@@ -47,7 +47,7 @@ class Message:
         return cls(
             role="assistant",
             content=content.strip(),
-            timestamp=datetime.now(UTC)
+            timestamp=datetime.now(timezone.utc)
         )
     
     @classmethod
@@ -56,7 +56,7 @@ class Message:
         return cls(
             role="system",
             content=content.strip(),
-            timestamp=datetime.now(UTC)
+            timestamp=datetime.now(timezone.utc)
         )
     
     def to_dict(self) -> dict[str, str]:

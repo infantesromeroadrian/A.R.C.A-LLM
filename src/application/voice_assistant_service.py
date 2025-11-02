@@ -77,7 +77,11 @@ class VoiceAssistantService:
             - latency: Dict con tiempos de cada etapa
             
         Raises:
-            RuntimeError: Si alguna etapa del pipeline falla
+            ValueError: Si audio_bytes está vacío o session_id inválido
+            RuntimeError: Si STT (Whisper) falla durante transcripción
+            RuntimeError: Si LLM (LM Studio) falla o no está disponible
+            RuntimeError: Si TTS (pyttsx3) falla durante síntesis
+            Exception: Cualquier error inesperado en el pipeline
         """
         total_start = time()
         latencies = {}
@@ -147,6 +151,12 @@ class VoiceAssistantService:
             - response_text: Respuesta del asistente (texto)
             - response_audio: Respuesta del asistente (audio bytes)
             - latency: Dict con tiempos
+            
+        Raises:
+            ValueError: Si text está vacío
+            RuntimeError: Si LLM (LM Studio) falla o no está disponible
+            RuntimeError: Si TTS (pyttsx3) falla durante síntesis
+            Exception: Cualquier error inesperado en el pipeline
         """
         total_start = time()
         latencies = {}

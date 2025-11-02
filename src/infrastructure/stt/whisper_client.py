@@ -5,7 +5,6 @@ Implementación optimizada para baja latencia con modelo Whisper local.
 """
 
 import asyncio
-import io
 import os
 import tempfile
 from pathlib import Path
@@ -24,6 +23,7 @@ os.environ["HF_HUB_CACHE"] = str(cache_dir)
 os.environ["HUGGINGFACE_HUB_CACHE"] = str(cache_dir)
 os.environ["XDG_CACHE_HOME"] = str(cache_dir.parent)  # Unix-style cache
 
+# ruff: noqa: E402 - Imports after cache config (required)
 from faster_whisper import WhisperModel
 from loguru import logger
 
@@ -37,6 +37,10 @@ class WhisperSTTClient:
     - Procesamiento async
     - Español como idioma principal
     """
+    
+    # Constantes de configuración de transcripción
+    DEFAULT_BEAM_SIZE = 5  # Tamaño del beam para búsqueda (balance entre velocidad y precisión)
+    VAD_MIN_SILENCE_MS = 500  # Silencio mínimo en ms para Voice Activity Detection
     
     def __init__(
         self,
@@ -149,9 +153,9 @@ class WhisperSTTClient:
             segments, info = model.transcribe(
                 str(temp_path),
                 language=language,
-                beam_size=5,
+                beam_size=self.DEFAULT_BEAM_SIZE,
                 vad_filter=True,  # Voice Activity Detection para mejor precisión
-                vad_parameters=dict(min_silence_duration_ms=500)
+                vad_parameters=dict(min_silence_duration_ms=self.VAD_MIN_SILENCE_MS)
             )
             
             # Combinar todos los segmentos

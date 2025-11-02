@@ -5,10 +5,9 @@ Implementación async wrapper para pyttsx3 (que es síncrono).
 """
 
 import asyncio
-import io
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Any
 from concurrent.futures import ThreadPoolExecutor
 
 import pyttsx3
@@ -53,7 +52,7 @@ class Pyttsx3TTSClient:
         
         # El engine se inicializa lazy
         self._engine: Optional[pyttsx3.Engine] = None
-        self._voices: list = []
+        self._voices: list[Any] = []  # pyttsx3.Voice no exporta tipos
         
         logger.info(
             f"🔈 Pyttsx3TTS initialized: rate={rate}, "
@@ -211,8 +210,8 @@ class Pyttsx3TTSClient:
             # Limpiar engine (importante para pyttsx3)
             try:
                 engine.stop()
-            except:
-                pass
+            except Exception as e:
+                logger.debug(f"Engine stop warning (safe to ignore): {e}")
     
     async def synthesize_to_file(
         self,

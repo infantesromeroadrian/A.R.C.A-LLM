@@ -184,7 +184,7 @@ class LMStudioClient:
                 {"role": "user", "content": "Hi"}
             ]
             
-            response = await asyncio.wait_for(
+            await asyncio.wait_for(
                 self.generate_response(test_messages, max_tokens=5),
                 timeout=10.0
             )

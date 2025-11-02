@@ -8,7 +8,6 @@ Siguiendo principios DDD:
 - Único punto de acceso a los mensajes
 """
 
-from dataclasses import dataclass, field
 from typing import Optional
 from uuid import UUID, uuid4
 from .message import Message

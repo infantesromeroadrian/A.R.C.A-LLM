@@ -115,7 +115,7 @@ if static_path.exists():
 
 
 # === Routes ===
-from .routes import voice_routes
+from .routes import voice_routes  # noqa: E402 - Import after app setup (required)
 
 app.include_router(voice_routes.router, prefix="/api", tags=["voice"])
 

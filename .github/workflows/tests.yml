@@ -104,9 +104,9 @@ jobs:
     
     - name: 🔒 Run Bandit (security linter)
       uses: tj-actions/bandit@v5.5
+      continue-on-error: true
       with:
         targets: |
           src/
         options: "-ll -r"
-        continue-on-error: true
 

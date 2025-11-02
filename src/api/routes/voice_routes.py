@@ -213,7 +213,7 @@ async def clear_conversation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/health")
+@router.get("/voice/health")
 async def health_check(
     service: VoiceAssistantService = Depends(get_voice_service)
 ):
