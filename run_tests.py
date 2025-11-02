@@ -45,7 +45,7 @@ class TestRunner:
     
     def unit_tests(self, coverage: bool = False) -> int:
         """Ejecutar solo tests unitarios."""
-        args = ["tests/unit/", "-v", "-m", "unit"]
+        args = ["tests/unit/", "-v"]
         
         if coverage:
             args.extend(["--cov=src", "--cov-report=term-missing"])
@@ -54,7 +54,7 @@ class TestRunner:
     
     def integration_tests(self) -> int:
         """Ejecutar solo tests de integración."""
-        args = ["tests/integration/", "-v", "-m", "integration"]
+        args = ["tests/integration/", "-v"]
         return self.run(args)
     
     def domain_tests(self) -> int:
