@@ -26,6 +26,11 @@ historyMD/
 tracking/
 diagrams/
 
+# Documentation - Solo README.md en raíz
+# Ignorar todos los .md en raíz excepto README.md
+/*.md
+!README.md
+
 # Virtual Environment
 venv/
 .venv/
