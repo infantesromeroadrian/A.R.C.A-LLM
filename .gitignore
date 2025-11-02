@@ -23,6 +23,7 @@ MANIFEST
 
 # Virtual Environment
 venv/
+.venv/
 arca-venv/
 arca-llm-venv/
 ENV/
@@ -31,6 +32,7 @@ env/
 # IDEs
 .vscode/
 .idea/
+.cursor/
 *.swp
 *.swo
 *~
@@ -64,6 +66,10 @@ coverage.xml
 htmlcov/
 *.cover
 .hypothesis/
+.mypy_cache/
+.ruff_cache/
+reports/
+test-results/
 
 # Docker
 .dockerignore
