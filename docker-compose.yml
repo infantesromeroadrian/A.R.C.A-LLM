@@ -4,8 +4,6 @@
 # Orquestación completa del sistema
 # ========================================
 
-version: '3.8'
-
 services:
   # ==========================================
   # A.R.C.A - Voice Assistant Service

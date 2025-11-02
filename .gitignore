@@ -72,7 +72,7 @@ reports/
 test-results/
 
 # Docker
-.dockerignore
+# (docker-compose.yml y Dockerfile deben estar en el repo)
 
 # Temporary files
 tmp/

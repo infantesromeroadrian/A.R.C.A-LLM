@@ -1,0 +1,88 @@
+# ========================================
+# .dockerignore - Optimizar build de Docker
+# ========================================
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+venv/
+arca-venv/
+arca-llm-venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+.cursor/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Environment
+.env
+.env.*
+
+# Logs
+logs/
+*.log
+
+# Models (se descargan automáticamente)
+models/hf_cache/
+models/tts_cache/
+
+# Testing
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+*.cover
+.hypothesis/
+.mypy_cache/
+.ruff_cache/
+reports/
+test-results/
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation (opcional, comentar si quieres incluir docs)
+docs/
+*.md
+!README.md
+
+# Tracking & History
+tracking/
+historyMD/
+diagrams/
+
+# Temporal
+tmp/
+temp/
+*.tmp
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Docker mismo
+Dockerfile
+docker-compose.yml
+.dockerignore
+
