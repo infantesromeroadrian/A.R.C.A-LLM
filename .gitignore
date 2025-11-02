@@ -21,6 +21,11 @@ wheels/
 *.egg
 MANIFEST
 
+# Personal / Project Management (NO SUBIR)
+historyMD/
+tracking/
+diagrams/
+
 # Virtual Environment
 venv/
 .venv/
