@@ -1,0 +1,21 @@
+{
+  "name": "msmk-voice-assistant",
+  "version": "1.0.0",
+  "description": "MSMK University - AI Voice Assistant Frontend",
+  "scripts": {
+    "start": "http-server . -p 8081 -c-1",
+    "dev": "http-server . -p 8081 -c-1 -o",
+    "serve": "python3 -m http.server 8080"
+  },
+  "keywords": [
+    "voice-assistant",
+    "ai",
+    "frontend"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
+
