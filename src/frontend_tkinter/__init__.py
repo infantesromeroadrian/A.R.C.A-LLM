@@ -5,18 +5,17 @@ Interfaz desktop con orbe animado estilo Jarvis/Iron Man para A.R.C.A-LLM.
 
 Components:
 - OrbeWindow: Ventana principal con Canvas
-- AnimationEngine: Motor de animación smooth
-- OrbStates: Estados del orbe (idle, listening, processing, speaking)
-- VoiceController: Integración con VoiceAssistantService
-- AudioThreadManager: Threading para audio non-blocking
+- VoiceController: Integración con VoiceAssistantService via API ✅
+- OrbState: Estados del orbe (idle, listening, processing, speaking)
 
 Architecture:
 - Presentation Layer: Tkinter UI
-- Integration: Reusar VoiceAssistantService existente
-- Threading: Audio en background
+- Integration: HTTP API calls al backend en Docker
+- Threading: Audio recording/playback en background
 """
 
-from .orbe_window import OrbeWindow
+from .orbe_window import OrbeWindow, OrbState
+from .voice_controller import VoiceController
 
-__all__ = ["OrbeWindow"]
+__all__ = ["OrbeWindow", "OrbState", "VoiceController"]
 
