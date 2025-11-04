@@ -5,8 +5,8 @@
 ### 1. Prerequisitos
 
 - **Docker Desktop** instalado y corriendo
-- **LM Studio** corriendo en tu máquina host en `http://localhost:1234`
-- **Modelo Qwen3-8B** cargado en LM Studio
+- **LM Studio** corriendo en tu máquina host en `http://192.168.1.38:1234`
+- **Modelo qwen/qwen3-4b-2507** cargado en LM Studio
 
 ---
 
@@ -68,7 +68,7 @@ Todas las configuraciones están en `docker-compose.yml` bajo la sección `envir
 environment:
   # LLM
   LM_STUDIO_URL: "http://host.docker.internal:1234/v1"
-  LM_STUDIO_MODEL: "qwen/qwen3-8b"
+  LM_STUDIO_MODEL: "qwen/qwen3-4b-2507"
   
   # Whisper
   WHISPER_MODEL: "tiny"  # tiny, base, small, medium, large

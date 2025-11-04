@@ -23,8 +23,8 @@ sudo systemctl start docker
 1. **Abrir LM Studio**
 2. **Cargar modelo:**
    - Pestaña "Discover"
-   - Buscar: `qwen3-8b`
-   - Descargar
+   - Buscar: `qwen3-4b-2507`
+   - Descargar (o usar el modelo que ya tienes cargado)
 3. **Iniciar servidor:**
    - Pestaña "Local Server"
    - Port: `1234`

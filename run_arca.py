@@ -24,11 +24,12 @@ def check_env_file():
     env_file = Path(".env")
     
     if not env_file.exists():
-        print("ℹ️  Archivo .env no encontrado (usando defaults)")
-        print("   Sistema funcionará con configuración por defecto")
-        print("   Para personalizar: cp .env.example .env")
+        print("ℹ️  Sin archivo .env - usando configuración por defecto")
+        print("   LM Studio: http://192.168.1.38:1234/v1")
+        print("   Modelo: qwen/qwen3-4b-2507")
+        print("   (Crear .env para personalizar - ver config.py)")
     else:
-        print("✅ Archivo .env encontrado (usando config personalizada)")
+        print("✅ Archivo .env encontrado - usando configuración personalizada")
 
 
 def check_venv():
@@ -61,8 +62,8 @@ def main():
     print("=" * 60)
     print()
     print("IMPORTANTE:")
-    print("1. Asegúrate de tener LM Studio corriendo en http://127.0.0.1:1234")
-    print("2. Carga el modelo en LM Studio")
+    print("1. Asegúrate de tener LM Studio corriendo en http://192.168.1.38:1234")
+    print("2. Verifica que el modelo qwen/qwen3-4b-2507 esté cargado")
     print("3. Abre http://localhost:8000 en tu navegador")
     print()
     print("Presiona Ctrl+C para detener el servidor")

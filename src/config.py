@@ -14,11 +14,11 @@ class Settings(BaseSettings):
     
     # === LM Studio Configuration ===
     lm_studio_url: str = Field(
-        default="http://127.0.0.1:1234/v1",
+        default="http://192.168.1.38:1234/v1",
         description="URL del servidor LM Studio local"
     )
     lm_studio_model: str = Field(
-        default="qwen/qwen3-8b",
+        default="qwen/qwen3-4b-2507",
         description="Nombre del modelo en LM Studio"
     )
     llm_max_tokens: int = Field(

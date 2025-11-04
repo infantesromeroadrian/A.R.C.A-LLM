@@ -4,7 +4,7 @@
 
 Sistema de asistente conversacional por voz que usa:
 - **Speech-to-Text**: Whisper Tiny (local, offline, 5x más rápido)
-- **LLM**: LM Studio con Qwen3-8B (más rápido y moderno)
+- **LLM**: LM Studio con Qwen3-4B-2507 (rápido y optimizado)
 - **Text-to-Speech**: pyttsx3 (local, offline, rápido)
 - **Memoria Conversacional**: Contexto completo durante la sesión
 
@@ -22,7 +22,30 @@ Sistema de asistente conversacional por voz que usa:
 
 ## 🚀 Quick Start
 
-### 🐳 Opción 1: Docker (Recomendado)
+### 🎨 Opción 1: Interfaz Tkinter con Orbe Jarvis (Desktop) ⭐ NUEVO
+
+**Interfaz desktop futurista con orbe animado estilo Jarvis/Iron Man:**
+
+```bash
+# Ejecutar interfaz Tkinter
+python -m src.frontend_tkinter.orbe_window
+
+# O con el resto del sistema:
+# (por implementar en TICKET-005)
+```
+
+**Características:**
+- ✨ Orbe animado estilo Jarvis con efectos glow
+- 🎤 Click en orbe para activar voz
+- 🌈 Estados visuales (idle, listening, processing, speaking)
+- 🖥️ Ventana siempre al frente
+- ⌨️ Esc o Click derecho para salir
+
+**Status:** 🔄 En desarrollo (Branch: `frontendTkinter`)
+
+---
+
+### 🐳 Opción 2: Docker (Web Interface)
 
 **Más fácil y sin problemas de dependencias:**
 
@@ -38,12 +61,12 @@ docker-compose up
 
 ---
 
-### 💻 Opción 2: Instalación Local
+### 💻 Opción 3: Instalación Local (Web Interface)
 
 **Prerequisitos:**
 - **Python 3.11+**
-- **LM Studio** instalado y corriendo en `http://127.0.0.1:1234`
-- **Modelo cargado** en LM Studio: `qwen/qwen3-8b`
+- **LM Studio** instalado y corriendo en `http://192.168.1.38:1234`
+- **Modelo cargado** en LM Studio: `qwen/qwen3-4b-2507`
 
 ### 2. Instalación
 
@@ -59,33 +82,43 @@ source arca-venv/bin/activate  # En Windows: arca-venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Configuración (Opcional)
+### 3. Configuración
 
-El sistema funciona con defaults razonables sin `.env`. Solo créalo si necesitas personalizar:
-
-```bash
-# OPCIONAL: Solo si quieres cambiar configuración
-cp .env.example .env
-# Luego edita .env con tus valores
-```
-
-**Defaults automáticos (sin .env):**
-- LM Studio: `http://127.0.0.1:1234`
-- Whisper: modelo `base`, CPU, int8
+**El sistema funciona inmediatamente con defaults optimizados:**
+- LM Studio: `http://192.168.1.38:1234/v1`
+- Modelo LLM: `qwen/qwen3-4b-2507`
+- Whisper: modelo `tiny`, CPU, int8
 - TTS: rate 175, volume 0.9
 - API: puerto 8000
 
-**Cuándo necesitas .env:**
-- Usar otro modelo LLM
-- Cambiar Whisper a GPU (cuda)
-- Usar modelo Whisper más rápido (tiny)
-- Cambiar puerto de API
+**Para cambiar configuración (opcional):**
+
+Crear archivo `.env` en la raíz del proyecto:
+```bash
+# .env
+LM_STUDIO_URL=http://otra-ip:1234/v1
+LM_STUDIO_MODEL=otro-modelo
+WHISPER_MODEL=base
+```
+
+Ver todas las variables disponibles en `src/config.py`
 
 ### 4. Iniciar LM Studio
 
 1. Abrir LM Studio
-2. Cargar modelo: `openai-gpt-oss-20b-abliterated-uncensored-neo-imatrix`
-3. Iniciar servidor local (asegurarse que corre en port 1234)
+2. Cargar modelo: `qwen/qwen3-4b-2507` (o cualquier modelo compatible)
+3. Iniciar servidor local en el puerto 1234
+4. Verificar que la URL del servidor sea accesible: `http://192.168.1.38:1234`
+
+**Los defaults ya están configurados correctamente en `src/config.py`**
+
+Si necesitas cambiar la configuración, crea un archivo `.env`:
+```bash
+# .env (opcional)
+LM_STUDIO_URL=http://192.168.1.38:1234/v1
+LM_STUDIO_MODEL=qwen/qwen3-4b-2507
+WHISPER_MODEL=tiny
+```
 
 ### 5. Ejecutar A.R.C.A
 

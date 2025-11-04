@@ -84,10 +84,10 @@ Crear un asistente de voz conversacional con IA que permita interacción natural
 - **Justificación:** Mejor modelo open-source para STT, soporte español excelente
 
 **LLM (Language Model):**
-- **Modelo:** openai-gpt-oss-20b-abliterated-uncensored-neo-imatrix
-- **Servidor:** LM Studio (http://127.0.0.1:1234)
-- **Parámetros:** 20B, optimizado para conversación
-- **Justificación:** Modelo local de alta calidad, sin censura, sin costos
+- **Modelo:** qwen/qwen3-4b-2507
+- **Servidor:** LM Studio (http://192.168.1.38:1234)
+- **Parámetros:** 4B parámetros, optimizado para velocidad y conversación
+- **Justificación:** Modelo local rápido y eficiente, excelente para español, sin costos
 
 **TTS (Text-to-Speech):**
 - **Modelo:** pyttsx3 (engine local)
