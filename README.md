@@ -24,29 +24,32 @@ Sistema de asistente conversacional por voz que usa:
 
 ### 🎨 Opción 1: Interfaz Tkinter con Orbe Jarvis (Desktop) ⭐ NUEVO
 
-**Interfaz desktop futurista con orbe animado estilo Jarvis/Iron Man:**
+**Interfaz desktop futurista con orbe animado estilo Jarvis/Iron Man + VOZ COMPLETA:**
 
-**Setup Recomendado (Híbrido: Backend Docker + Frontend Local):**
+**Setup (Backend Docker + Frontend Tkinter Local):**
 
 ```bash
 # 1. Backend en Docker
 docker-compose up -d
 
-# 2. Frontend Tkinter LOCAL
-python run_tkinter_local.py
-```
+# 2. Activar virtual environment
+source arca-chatbot-venv/bin/activate
 
-**¿Por qué híbrido?** Tkinter necesita display gráfico (GUI), Docker containers son headless. Esta configuración te da lo mejor de ambos mundos: backend aislado + display nativo.
+# 3. Frontend Tkinter con VOZ
+python run_tkinter_voice.py
+```
 
 **Características:**
 - ✨ Orbe animado estilo Jarvis con efectos glow
-- 🎤 Click en orbe para activar voz
+- 🎤 **MANTÉN PRESIONADO** el orbe mientras hablas
+- 🗣️ **SUELTA** para procesar y obtener respuesta
 - 🌈 Estados visuales (idle, listening, processing, speaking)
+- 🔊 Reproducción automática de respuesta
+- 💬 Memoria conversacional completa
 - 🖥️ Ventana siempre al frente
 - ⌨️ Esc o Click derecho para salir
-- 🔌 Se conecta a backend API en Docker
 
-**Status:** 🔄 En desarrollo (Branch: `frontendTkinter`)
+**Status:** ✅ **FUNCIONAL** - Voz completa integrada (Branch: `frontendTkinter`)
 
 📖 **Ver [docs/tkinter/TKINTER_DOCKER_SETUP.md](docs/tkinter/TKINTER_DOCKER_SETUP.md) para más detalles**
 
