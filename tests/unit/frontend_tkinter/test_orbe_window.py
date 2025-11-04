@@ -37,6 +37,7 @@ class TestOrbeWindowInitialization:
         mock_root = Mock()
         mock_root._last_child_ids = {}
         mock_root._w = '.root'
+        mock_root.children = {}
         mock_tk.return_value = mock_root
         
         window = OrbeWindow()
@@ -340,6 +341,7 @@ class TestWindowLifecycle:
         mock_root = Mock()
         mock_root._last_child_ids = {}
         mock_root._w = '.root'
+        mock_root.children = {}
         mock_tk.return_value = mock_root
         
         window = OrbeWindow()
@@ -354,6 +356,8 @@ class TestWindowLifecycle:
         """Test run() starts Tkinter mainloop."""
         mock_root = Mock()
         mock_root._last_child_ids = {}
+        mock_root._w = '.root'
+        mock_root.children = {}
         mock_root.mainloop = Mock()
         mock_tk.return_value = mock_root
         
