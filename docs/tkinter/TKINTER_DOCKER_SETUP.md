@@ -32,41 +32,18 @@ python run_tkinter_local.py
 
 ---
 
-## ⚠️ Alternativa: Todo en Docker (Complejo)
+## ⚠️ Alternativa: Todo en Docker (NO RECOMENDADO)
 
-### Requiere X11 Forwarding
+**Esta opción NO está implementada** porque:
+- ❌ Muy complejo en Mac (requiere XQuartz + X11 forwarding)
+- ❌ Performance inferior vs solución híbrida
+- ❌ Difícil de mantener
+- ❌ Más lento que Tkinter nativo
 
-**En Mac:**
-
-1. **Instalar XQuartz:**
-   ```bash
-   brew install --cask xquartz
-   ```
-
-2. **Configurar XQuartz:**
-   - Abrir XQuartz
-   - Preferences → Security
-   - ✅ "Allow connections from network clients"
-
-3. **Permitir conexiones:**
-   ```bash
-   xhost + localhost
-   ```
-
-4. **Ejecutar con docker-compose especial:**
-   ```bash
-   docker-compose -f docker-compose.tkinter.yml up
-   ```
-
-**En Linux:**
-
-```bash
-# Dar permiso al display
-xhost +local:docker
-
-# Ejecutar
-docker-compose -f docker-compose.tkinter.yml up
-```
+**Si realmente necesitas correr GUI en Docker:**
+1. Considerar usar VNC en lugar de X11
+2. O mejor aún: usar el frontend web (más portable)
+3. La solución híbrida es siempre mejor para desarrollo
 
 ---
 
@@ -109,12 +86,12 @@ Ejecuta interfaz Tkinter local que se conecta al backend en Docker.
 python run_tkinter_local.py
 ```
 
-### `docker-compose.tkinter.yml`
+### `docker-compose.yml` (Original)
 
-Docker compose con configuración X11 (experimental).
+Docker compose estándar del proyecto - usa este.
 
 ```bash
-docker-compose -f docker-compose.tkinter.yml up
+docker-compose up -d
 ```
 
 ---
