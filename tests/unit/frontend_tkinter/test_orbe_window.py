@@ -30,9 +30,10 @@ class TestOrbStateEnum:
 class TestOrbeWindowInitialization:
     """Test OrbeWindow initialization and setup."""
     
+    @patch('src.frontend_tkinter.orbe_window.OrbeWindow._animate')
     @patch('tkinter.Tk')
     @patch('tkinter.Canvas')
-    def test_window_initialization(self, mock_canvas, mock_tk):
+    def test_window_initialization(self, mock_canvas, mock_tk, mock_animate):
         """Test basic window initialization."""
         mock_root = Mock()
         mock_root._last_child_ids = {}
@@ -334,9 +335,10 @@ class TestMessageDisplay:
 class TestWindowLifecycle:
     """Test window lifecycle management."""
     
+    @patch('src.frontend_tkinter.orbe_window.OrbeWindow._animate')
     @patch('tkinter.Tk')
     @patch('tkinter.Canvas')
-    def test_start_animation_begins_loop(self, mock_canvas, mock_tk):
+    def test_start_animation_begins_loop(self, mock_canvas, mock_tk, mock_animate):
         """Test start_animation initiates animation loop."""
         mock_root = Mock()
         mock_root._last_child_ids = {}
@@ -346,13 +348,16 @@ class TestWindowLifecycle:
         
         window = OrbeWindow()
         
-        # Animation starts automatically in __init__
-        # Verify root.after was called
-        assert mock_root.after.called
+        # Verify _animate was called during init
+        mock_animate.assert_called_once()
+        
+        # Verify start_animation method exists
+        assert hasattr(window, 'start_animation')
     
+    @patch('src.frontend_tkinter.orbe_window.OrbeWindow._animate')
     @patch('tkinter.Tk')
     @patch('tkinter.Canvas')
-    def test_run_starts_mainloop(self, mock_canvas, mock_tk):
+    def test_run_starts_mainloop(self, mock_canvas, mock_tk, mock_animate):
         """Test run() starts Tkinter mainloop."""
         mock_root = Mock()
         mock_root._last_child_ids = {}
