@@ -1,0 +1,58 @@
+# Coverage.py configuration for A.R.C.A-LLM
+
+[run]
+# Source code to measure
+source = src
+
+# Omit files from coverage
+omit =
+    # Test files
+    */tests/*
+    */test_*.py
+    
+    # Frontend Tkinter (GUI components - hard to test automatically)
+    src/frontend_tkinter/*
+    
+    # Scripts
+    */run_*.py
+    
+    # Venv
+    */venv/*
+    */arca-chatbot-venv/*
+    
+    # __init__ files (often just imports)
+    */__init__.py
+
+[report]
+# Fail if coverage is below this threshold
+fail_under = 60
+
+# Show missing lines in report
+show_missing = True
+
+# Exclude lines from coverage
+exclude_lines =
+    # Standard pragmas
+    pragma: no cover
+    
+    # Don't complain about missing debug code
+    def __repr__
+    
+    # Don't complain if tests don't hit defensive assertion code
+    raise AssertionError
+    raise NotImplementedError
+    
+    # Don't complain if non-runnable code isn't run
+    if __name__ == .__main__.:
+    if TYPE_CHECKING:
+    
+    # Don't complain about abstract methods
+    @abstractmethod
+    @abc.abstractmethod
+
+[html]
+directory = htmlcov
+
+[xml]
+output = coverage.xml
+
