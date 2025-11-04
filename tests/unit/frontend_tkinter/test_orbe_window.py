@@ -35,6 +35,8 @@ class TestOrbeWindowInitialization:
     def test_window_initialization(self, mock_canvas, mock_tk):
         """Test basic window initialization."""
         mock_root = Mock()
+        mock_root._last_child_ids = {}
+        mock_root._w = '.root'
         mock_tk.return_value = mock_root
         
         window = OrbeWindow()
@@ -337,6 +339,7 @@ class TestWindowLifecycle:
         """Test start_animation initiates animation loop."""
         mock_root = Mock()
         mock_root._last_child_ids = {}
+        mock_root._w = '.root'
         mock_tk.return_value = mock_root
         
         window = OrbeWindow()
