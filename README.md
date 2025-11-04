@@ -26,13 +26,17 @@ Sistema de asistente conversacional por voz que usa:
 
 **Interfaz desktop futurista con orbe animado estilo Jarvis/Iron Man:**
 
-```bash
-# Ejecutar interfaz Tkinter
-python -m src.frontend_tkinter.orbe_window
+**Setup Recomendado (Híbrido: Backend Docker + Frontend Local):**
 
-# O con el resto del sistema:
-# (por implementar en TICKET-005)
+```bash
+# 1. Backend en Docker
+docker-compose up -d
+
+# 2. Frontend Tkinter LOCAL
+python run_tkinter_local.py
 ```
+
+**¿Por qué híbrido?** Tkinter necesita display gráfico (GUI), Docker containers son headless. Esta configuración te da lo mejor de ambos mundos: backend aislado + display nativo.
 
 **Características:**
 - ✨ Orbe animado estilo Jarvis con efectos glow
@@ -40,8 +44,11 @@ python -m src.frontend_tkinter.orbe_window
 - 🌈 Estados visuales (idle, listening, processing, speaking)
 - 🖥️ Ventana siempre al frente
 - ⌨️ Esc o Click derecho para salir
+- 🔌 Se conecta a backend API en Docker
 
 **Status:** 🔄 En desarrollo (Branch: `frontendTkinter`)
+
+📖 **Ver [docs/tkinter/TKINTER_DOCKER_SETUP.md](docs/tkinter/TKINTER_DOCKER_SETUP.md) para más detalles**
 
 ---
 
