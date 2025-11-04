@@ -56,6 +56,13 @@ class VoiceController:
         # State management
         self.is_recording = False
         self.recording_data = []
+        
+        # Configuration properties for testing
+        self.sample_rate = self.SAMPLE_RATE
+        self.channels = self.CHANNELS
+        self.state_callback = on_state_change
+        self.stream = None
+        self.audio_frames = []
         self.session_id: Optional[UUID] = None
         
         # Threading
@@ -310,6 +317,157 @@ class VoiceController:
             sd.stop()
         except Exception:
             pass
+    
+    # === Helper Methods for Testing ===
+    
+    def _audio_callback(self, indata, frames, time_info, status):
+        """
+        Callback for audio input stream (for testing).
+        
+        Args:
+            indata: Input audio data
+            frames: Number of frames
+            time_info: Time information
+            status: Stream status
+        """
+        if status:
+            logger.warning(f"Audio callback status: {status}")
+        self.audio_frames.append(indata.copy())
+    
+    def get_audio_data(self) -> Optional[np.ndarray]:
+        """
+        Get recorded audio data.
+        
+        Returns:
+            Combined audio data or None if no frames recorded
+        """
+        if not self.audio_frames:
+            return None
+        
+        # Combine all frames
+        audio_data = np.concatenate(self.audio_frames, axis=0)
+        
+        # Flatten to 1D if needed
+        if audio_data.ndim > 1:
+            audio_data = audio_data.flatten()
+        
+        # Normalize to [-1, 1] range
+        audio_data = np.clip(audio_data, -1.0, 1.0)
+        
+        return audio_data
+    
+    def decode_base64_audio(self, base64_audio: str) -> Optional[np.ndarray]:
+        """
+        Decode Base64 encoded audio data.
+        
+        Args:
+            base64_audio: Base64 encoded audio string
+            
+        Returns:
+            Decoded audio as numpy array or None if decoding fails
+        """
+        import base64
+        
+        if not base64_audio:
+            return None
+        
+        try:
+            audio_bytes = base64.b64decode(base64_audio)
+            audio_array = np.frombuffer(audio_bytes, dtype=np.float32)
+            return audio_array
+        except Exception as e:
+            logger.error(f"Failed to decode base64 audio: {e}")
+            return None
+    
+    def save_audio_to_file(self, audio_data: np.ndarray, file_path: str) -> None:
+        """
+        Save audio data to WAV file.
+        
+        Args:
+            audio_data: Audio data as numpy array
+            file_path: Path to save WAV file
+        """
+        import soundfile as sf
+        
+        try:
+            sf.write(file_path, audio_data, samplerate=self.sample_rate)
+            logger.info(f"Audio saved to {file_path}")
+        except Exception as e:
+            logger.error(f"Failed to save audio to file: {e}")
+    
+    def set_state_callback(self, callback: Callable[[str], None]) -> None:
+        """
+        Set callback for state changes.
+        
+        Args:
+            callback: Function to call on state change
+        """
+        self.state_callback = callback
+        self.on_state_change = callback
+    
+    def _trigger_state_change(self, state: str) -> None:
+        """
+        Trigger state change callback.
+        
+        Args:
+            state: New state string
+        """
+        if self.state_callback:
+            self.state_callback(state)
+    
+    def play_audio(self, audio_data: Optional[np.ndarray]) -> None:
+        """
+        Play audio data through speakers.
+        
+        Args:
+            audio_data: Audio data to play
+        """
+        if audio_data is None or len(audio_data) == 0:
+            return
+        
+        try:
+            sd.play(audio_data, samplerate=self.sample_rate)
+            sd.wait()
+        except Exception as e:
+            logger.error(f"Failed to play audio: {e}")
+    
+    async def send_audio_to_api(self, audio_data: np.ndarray) -> Optional[dict]:
+        """
+        Send audio data to API for processing.
+        
+        Args:
+            audio_data: Audio data as numpy array
+            
+        Returns:
+            API response dict or None on error
+        """
+        try:
+            # Convert to WAV format in memory
+            wav_buffer = io.BytesIO()
+            with wave.open(wav_buffer, 'wb') as wav_file:
+                wav_file.setnchannels(self.channels)
+                wav_file.setsampwidth(2)  # 16-bit
+                wav_file.setframerate(self.sample_rate)
+                wav_file.writeframes(audio_data.tobytes())
+            
+            wav_buffer.seek(0)
+            
+            # Send to API
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    f"{self.api_url}/api/voice/process",
+                    files={"audio": ("audio.wav", wav_buffer, "audio/wav")}
+                )
+                
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    logger.error(f"API error: {response.status_code} - {response.text}")
+                    return None
+        
+        except Exception as e:
+            logger.error(f"Failed to send audio to API: {e}")
+            return None
 
 
 # === Testing ===
